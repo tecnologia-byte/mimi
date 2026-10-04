@@ -1,7 +1,7 @@
 # Roadmap — Mimi (IVAD Home & Goods)
 
 ## En curso
-- [ ] Corregir auto-envío del primer mensaje (funciona con clic real tras ~4s; falla si se dispara demasiado pronto tras montar)
+- [x] Corregir auto-envío del primer mensaje para que Mimi responda al abrir el chat
 - [x] Revisar imagen de estilo enviada y acercar a Mimi al cuadro de mensaje
 
 ## Pedidos nuevos del usuario
