@@ -5,6 +5,8 @@ import { convertToModelMessages, generateText, type UIMessage } from "ai";
 
 import { createResponsesCall } from "@/lib/ai/responses";
 import { MIMI_SYSTEM_PROMPT } from "@/lib/mimi";
+import { SPECIALISTS } from "@/lib/agents";
+import { createMiltTools } from "@/lib/milt.server";
 
 function messageText(message: UIMessage): string {
   return message.parts
@@ -57,7 +59,7 @@ export const Route = createFileRoute("/api/chat")({
           return new Response(JSON.stringify({ error: "Sesión inválida" }), { status: 401 });
         }
 
-        let body: { messages?: UIMessage[]; threadId?: string; webSearch?: boolean };
+        let body: { messages?: UIMessage[]; threadId?: string; webSearch?: boolean; agent?: string };
         try {
           body = await request.json();
         } catch {
@@ -127,9 +129,27 @@ export const Route = createFileRoute("/api/chat")({
               .map((k) => `### ${k.title} (${k.category})\n${k.content.slice(0, 3000)}`)
               .join("\n\n")}`
           : "";
+        const agent = body.agent ?? "mimi";
+        let agentBlock = "";
+        if (agent === "contadora" || agent === "logistica") {
+          agentBlock = `\n\n## Tu versión activa\n${SPECIALISTS[agent]}\nSi la tarea también necesita a la otra especialista, consúltala con la herramienta consultar_agente.`;
+        } else if (agent === "milt") {
+          agentBlock =
+            "\n\n## Modo Milt\nEres la coordinadora de Milt, el equipo de agentes de IVAD. Para cada tarea divide el trabajo y consulta a Mimi Contadora y/o Mimi Logística con la herramienta consultar_agente (pueden ser varias consultas). Luego une sus respuestas en una solución final clara, indicando qué aportó cada agente.";
+        } else {
+          agentBlock =
+            "\n\n## Milt\nPuedes consultar a Mimi Contadora (finanzas, impuestos) o Mimi Logística (inventario, envíos) con la herramienta consultar_agente cuando la pregunta lo requiera.";
+        }
         const { result, response } = createResponsesCall(
           request,
-          { baseURL: "https://ai.gateway.lovable.dev/v1", apiKey, model: "openai/gpt-6-astra", system: MIMI_SYSTEM_PROMPT + knowledgeBlock, webSearch: body.webSearch === true },
+          {
+            baseURL: "https://ai.gateway.lovable.dev/v1",
+            apiKey,
+            model: "openai/gpt-6-astra",
+            system: MIMI_SYSTEM_PROMPT + agentBlock + knowledgeBlock,
+            webSearch: body.webSearch === true,
+            tools: createMiltTools(apiKey, request.signal),
+          },
           modelMessages,
         );
 

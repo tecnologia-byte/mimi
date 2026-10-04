@@ -94,7 +94,7 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
           }
         }
       }
-      sendMessage({ text: fullText, files: fileParts }, { body: { webSearch: opts.webSearch } });
+      sendMessage({ text: fullText, files: fileParts }, { body: { webSearch: opts.webSearch, agent: getActiveAgent() } });
     },
     [sendMessage],
   );
