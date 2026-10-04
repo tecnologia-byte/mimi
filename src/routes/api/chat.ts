@@ -7,6 +7,7 @@ import { createResponsesCall } from "@/lib/ai/responses";
 import { MIMI_SYSTEM_PROMPT } from "@/lib/mimi";
 import { SPECIALISTS } from "@/lib/agents";
 import { createMiltTools } from "@/lib/milt";
+import { createGmailTools } from "@/lib/gmail-tools";
 
 function messageText(message: UIMessage): string {
   return message.parts
@@ -148,7 +149,7 @@ export const Route = createFileRoute("/api/chat")({
             model: "openai/gpt-6-astra",
             system: MIMI_SYSTEM_PROMPT + agentBlock + knowledgeBlock,
             webSearch: body.webSearch === true,
-            tools: createMiltTools(apiKey, request.signal),
+            tools: { ...createMiltTools(apiKey, request.signal), ...createGmailTools() },
           },
           modelMessages,
         );

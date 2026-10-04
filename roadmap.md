@@ -27,4 +27,6 @@
 - [x] Adjuntar documentos e imágenes desde el primer mensaje con vista previa
 
 - [x] Mimi Contadora, Mimi Logística y Milt (agentes)
-- [ ] Gmail y Drive: conexión simple con cuenta de Google de IVAD (el usuario no puede crear permisos de Google)
+- [x] Gmail de IVAD en el chat (buscar y enviar con confirmación)
+- [ ] Gmail/Drive por empleado: requiere crear permiso de Google una vez (bloqueado: el usuario no puede hacerlo)
+- [ ] Drive de IVAD: el usuario debe conectar la cuenta
