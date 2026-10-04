@@ -26,17 +26,16 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
   const [value, setValue] = useState("");
   const [webSearch, setWebSearch] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const sendBtnRef = useRef<HTMLButtonElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<File[]>([]);
 
   useImperativeHandle(ref, () => ({
     focus: () => textareaRef.current?.focus(),
-    // Fills the textarea and clicks the real send button so the send goes
-    // through the exact same event path as a manual click.
+    // Sends the text straight through onSend. Clicking the real send button
+    // raced with the disabled state and silently did nothing.
     fillAndSubmit: (text: string) => {
-      setValue(text);
-      setTimeout(() => sendBtnRef.current?.click(), 60);
+      setValue("");
+      onSend(text, { webSearch, files: [] });
     },
   }));
 
@@ -134,7 +133,6 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
           </Button>
         ) : (
           <Button
-            ref={sendBtnRef}
             size="icon"
             className="rounded-full"
             onClick={submit}
