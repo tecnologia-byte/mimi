@@ -1,5 +1,5 @@
-import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { ArrowUp, Check, ChevronDown, Globe, Mic, Paperclip, Plus, Sparkles, Square, X } from "lucide-react";
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import { ArrowUp, Check, ChevronDown, File, Globe, Mic, Plus, Square, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -8,7 +8,7 @@ import { ALLOWED_FILE_ACCEPT, isCodeFile } from "@/lib/files";
 
 export interface ComposerHandle {
   focus: () => void;
-  fillAndSubmit: (text: string) => void;
+  fillAndSubmit: (text: string, files?: File[], webSearch?: boolean) => void;
 }
 
 interface ComposerProps {
@@ -31,6 +31,17 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
   const fileRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<File[]>([]);
   const [modelMenuOpen, setModelMenuOpen] = useState(false);
+  const imagePreviews = useMemo(
+    () => new Map(files.filter((file) => file.type.startsWith("image/")).map((file) => [file, URL.createObjectURL(file)])),
+    [files],
+  );
+
+  useEffect(
+    () => () => {
+      imagePreviews.forEach((url) => URL.revokeObjectURL(url));
+    },
+    [imagePreviews],
+  );
 
   // Modelos de Mimi disponibles. Por ahora solo Mimi Flash 1.5.
   const MIMI_MODELS = [{ id: "mimi-flash-1.5", name: "Mimi Flash 1.5", tag: "Rápido" }];
@@ -40,9 +51,9 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
     focus: () => textareaRef.current?.focus(),
     // Sends the text straight through onSend. Clicking the real send button
     // raced with the disabled state and silently did nothing.
-    fillAndSubmit: (text: string) => {
+    fillAndSubmit: (text: string, pendingFiles = [], pendingWebSearch = false) => {
       setValue("");
-      onSend(text, { webSearch, files: [] });
+      onSend(text || "Analiza estos archivos.", { webSearch: pendingWebSearch, files: pendingFiles });
     },
   }));
 
@@ -62,15 +73,28 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
       )}
     >
       {files.length > 0 && (
-        <div className="mb-2 flex flex-wrap gap-1.5">
+        <div className="mb-3 flex gap-2 overflow-x-auto pb-1">
           {files.map((f, i) => (
-            <span key={i} className="flex max-w-[200px] items-center gap-1 rounded-full bg-accent px-2.5 py-1 text-xs text-accent-foreground">
-              <Paperclip className="h-3 w-3 shrink-0" />
-              <span className="truncate">{f.name}</span>
-              <button type="button" aria-label="Quitar archivo" onClick={() => setFiles(files.filter((_, j) => j !== i))}>
-                <X className="h-3 w-3" />
-              </button>
-            </span>
+            <div key={`${f.name}-${f.lastModified}-${i}`} className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-border bg-accent">
+              {imagePreviews.get(f) ? (
+                <img src={imagePreviews.get(f)} alt={`Vista previa de ${f.name}`} className="h-full w-full object-cover" />
+              ) : (
+                <div className="flex h-full flex-col items-center justify-center gap-1 px-1.5 text-center text-accent-foreground">
+                  <File className="h-6 w-6" />
+                  <span className="w-full truncate text-[10px]">{f.name}</span>
+                </div>
+              )}
+              <Button
+                type="button"
+                variant="secondary"
+                size="icon"
+                className="absolute right-1 top-1 h-6 w-6 rounded-full shadow-sm"
+                aria-label={`Quitar ${f.name}`}
+                onClick={() => setFiles(files.filter((_, j) => j !== i))}
+              >
+                <X className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           ))}
         </div>
       )}
@@ -111,7 +135,6 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
             aria-label="Elegir modelo de Mimi"
             title="Elegir modelo de Mimi"
           >
-            <Sparkles className="h-3.5 w-3.5 text-primary" />
             {activeModel.name}
             <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", modelMenuOpen && "rotate-180")} />
           </button>
@@ -129,7 +152,6 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
                     onClick={() => setModelMenuOpen(false)}
                     className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left text-sm text-popover-foreground hover:bg-accent"
                   >
-                    <Sparkles className="h-4 w-4 shrink-0 text-primary" />
                     <span className="flex-1">
                       <span className="block font-medium">{m.name}</span>
                       <span className="block text-xs text-muted-foreground">{m.tag}</span>
