@@ -7,7 +7,7 @@ import { AboutMimiModal } from "./AboutMimiModal";
 import { Composer } from "./Composer";
 import { createThread, PENDING_MESSAGE_KEY } from "@/lib/threads";
 import { MIMI_SUGGESTIONS } from "@/lib/mimi";
-import mimiHero from "@/assets/mimi-hero.png.asset.json";
+import mimiHero from "@/assets/mimi-hero-cutout.png";
 
 const suggestionIcons = [BookOpen, Lightbulb, BarChart3, PenLine];
 
@@ -61,13 +61,17 @@ export function WelcomeScreen({ userId }: { userId: string }) {
           </button>
         </div>
 
-        <div className="mt-1 flex min-w-0 flex-col">
-          <img
-            src={mimiHero.url}
-            alt="Mimi, asistente de IVAD"
-            className="pointer-events-none -mb-px mr-2 h-28 w-auto max-w-[58%] self-end object-contain object-bottom select-none sm:mr-5 sm:h-36 sm:max-w-[50%] lg:h-40"
-          />
-          <Composer onSend={startChat} busy={busy} large />
+        <div className="mt-2 flex min-w-0 flex-col">
+          <div className="flex justify-end pr-4 sm:pr-8">
+            <img
+              src={mimiHero}
+              alt="Mimi, asistente de IVAD"
+              className="pointer-events-none block h-36 w-auto select-none sm:h-44 lg:h-52"
+            />
+          </div>
+          <div className="relative z-10">
+            <Composer onSend={startChat} busy={busy} large />
+          </div>
         </div>
 
         <p className="text-center text-xs text-muted-foreground">
