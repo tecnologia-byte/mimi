@@ -2,7 +2,8 @@ import { useEffect, useRef } from "react";
 import type { UIMessage } from "ai";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Copy, FileSpreadsheet, FileText, Paperclip, RefreshCw, Star, ThumbsDown, ThumbsUp } from "lucide-react";
+import { Copy, FileSpreadsheet, FileText, Paperclip, RefreshCw, Star, ThumbsDown, ThumbsUp, Users } from "lucide-react";
+import { agentName } from "@/lib/agents";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";

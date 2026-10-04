@@ -14,6 +14,7 @@ import {
   Star,
   Trash2,
   Wrench,
+  Users,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
@@ -49,6 +50,7 @@ const sections = [
   { title: "Plantillas", icon: LayoutTemplate, to: "/plantillas" },
   { title: "Favoritos", icon: Star, to: "/favoritos" },
   { title: "Herramientas", icon: Wrench, to: "/herramientas" },
+  { title: "Milt (agentes)", icon: Users, to: "/milt" },
 ] as const;
 
 /** Types out a chat title letter by letter when it changes (auto-rename). */
