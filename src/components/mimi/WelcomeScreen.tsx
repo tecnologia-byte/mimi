@@ -39,20 +39,13 @@ export function WelcomeScreen({ userId }: { userId: string }) {
         IVAD
       </span>
 
-      {/* Mimi stays visually anchored just above the message box. */}
-      <img
-        src={mimiHero.url}
-        alt="Mimi, asistente de IVAD"
-        className="pointer-events-none absolute right-3 top-[42%] hidden w-56 -translate-y-1/2 select-none object-contain md:block lg:right-6 lg:w-72 xl:w-80"
-      />
-
-      <div className="relative mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center gap-4 px-4 py-6 sm:gap-5 sm:py-14">
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-5xl">
-          Hola, soy <span className="font-script text-5xl text-primary sm:text-7xl">Mimi</span>{" "}
+      <div className="relative mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center gap-3 px-4 py-5 sm:gap-4 sm:py-10">
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
+          Hola, soy <span className="font-script text-4xl text-primary sm:text-6xl lg:text-7xl">Mimi</span>{" "}
           <span className="text-primary">✦</span>
         </h1>
-        <p className="text-xl font-medium text-foreground">Tu asistente inteligente de IVAD</p>
-        <p className="max-w-xl border-l-2 border-primary pl-4 text-muted-foreground">
+        <p className="text-base font-medium text-foreground sm:text-lg lg:text-xl">Tu asistente inteligente de IVAD</p>
+        <p className="max-w-xl border-l-2 border-primary pl-3 text-sm text-muted-foreground sm:pl-4 sm:text-base">
           Estoy aquí para ayudarte con información, respuestas, redacción, análisis y mucho más.
           ¿En qué puedo asistirte hoy?
         </p>
@@ -68,7 +61,14 @@ export function WelcomeScreen({ userId }: { userId: string }) {
           </button>
         </div>
 
-        <Composer onSend={startChat} busy={busy} large />
+        <div className="relative mt-1 pt-28 sm:pt-32 lg:pt-36">
+          <img
+            src={mimiHero.url}
+            alt="Mimi, asistente de IVAD"
+            className="pointer-events-none absolute bottom-[calc(100%-0.25rem)] right-2 h-32 max-w-[48%] select-none object-contain object-bottom sm:right-5 sm:h-36 lg:h-40"
+          />
+          <Composer onSend={startChat} busy={busy} large />
+        </div>
 
         <p className="text-center text-xs text-muted-foreground">
           Mimi puede cometer errores. Verifica la información importante.
