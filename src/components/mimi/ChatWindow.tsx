@@ -46,7 +46,11 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
     if (pending) {
       sentPending.current = true;
       sessionStorage.removeItem(PENDING_MESSAGE_KEY);
-      sendMessage({ text: pending });
+      console.log("[mimi] sending pending, status:", status);
+      sendMessage({ text: pending }).then(
+        () => console.log("[mimi] pending send resolved"),
+        (e) => console.log("[mimi] pending send rejected", e),
+      );
     }
   }, [sendMessage]);
 
