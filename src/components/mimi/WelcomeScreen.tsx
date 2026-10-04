@@ -78,7 +78,7 @@ export function WelcomeScreen({ userId }: { userId: string }) {
           <p className="mb-3 text-sm font-semibold">Sugerencias para ti</p>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {MIMI_SUGGESTIONS.map((s, i) => {
-              const Icon = suggestionIcons[i % suggestionIcons.length];
+              const Icon = suggestionIcons[i % suggestionIcons.length] ?? BookOpen;
               return (
                 <button
                   key={s.title}
