@@ -1,5 +1,5 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { ArrowUp, Globe, Mic, Paperclip, Plus, Square, X } from "lucide-react";
+import { ArrowUp, Check, ChevronDown, Globe, Mic, Paperclip, Plus, Sparkles, Square, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -30,6 +30,11 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<File[]>([]);
+  const [modelMenuOpen, setModelMenuOpen] = useState(false);
+
+  // Modelos de Mimi disponibles. Por ahora solo Mimi Flash 1.5.
+  const MIMI_MODELS = [{ id: "mimi-flash-1.5", name: "Mimi Flash 1.5", tag: "Rápido" }];
+  const activeModel = MIMI_MODELS[0];
 
   useImperativeHandle(ref, () => ({
     focus: () => textareaRef.current?.focus(),
