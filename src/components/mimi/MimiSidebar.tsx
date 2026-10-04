@@ -50,6 +50,25 @@ const sections = [
   { title: "Herramientas", icon: Wrench, to: "/herramientas" },
 ] as const;
 
+/** Types out a chat title letter by letter when it changes (auto-rename). */
+function AnimatedTitle({ title }: { title: string }) {
+  const [shown, setShown] = useState(title);
+  const prevRef = useRef(title);
+  useEffect(() => {
+    if (title === prevRef.current) return;
+    prevRef.current = title;
+    let i = 0;
+    setShown("");
+    const timer = setInterval(() => {
+      i += 1;
+      setShown(title.slice(0, i));
+      if (i >= title.length) clearInterval(timer);
+    }, 35);
+    return () => clearInterval(timer);
+  }, [title]);
+  return <span className="truncate">{shown}</span>;
+}
+
 function groupThreads(threads: Thread[]) {
   const pinned = threads.filter((t) => t.pinned);
   const rest = threads.filter((t) => !t.pinned);
@@ -168,7 +187,7 @@ export function MimiSidebar({ user }: { user: User }) {
                     <SidebarMenuItem key={thread.id}>
                       <SidebarMenuButton asChild isActive={pathname === `/chat/${thread.id}`}>
                         <Link to="/chat/$threadId" params={{ threadId: thread.id }}>
-                          <span className="truncate">{thread.title}</span>
+                          <AnimatedTitle title={thread.title} />
                         </Link>
                       </SidebarMenuButton>
                       <DropdownMenu>

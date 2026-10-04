@@ -2,9 +2,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type FileUIPart, type UIMessage } from "ai";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
-import { PENDING_MESSAGE_KEY, PENDING_VOICE_KEY } from "@/lib/threads";
+import { PENDING_MESSAGE_KEY, PENDING_VOICE_KEY, threadsQueryKey } from "@/lib/threads";
 import { VoicePanel, type VoiceTurn } from "./VoicePanel";
 import { Composer, type ComposerHandle } from "./Composer";
 import { MessageList } from "./MessageList";
@@ -18,6 +19,7 @@ interface ChatWindowProps {
 export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
   const composerRef = useRef<ComposerHandle>(null);
   const sentPending = useRef(false);
+  const queryClient = useQueryClient();
 
   const transport = useMemo(
     () =>
@@ -38,6 +40,10 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
     transport,
     onError: (error) => {
       toast.error(error.message || "Mimi no pudo responder. Inténtalo de nuevo.");
+    },
+    onFinish: () => {
+      // The server may have auto-renamed the chat; refresh the sidebar list.
+      queryClient.invalidateQueries({ queryKey: threadsQueryKey });
     },
   });
 
