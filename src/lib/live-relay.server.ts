@@ -174,6 +174,7 @@ async function answerQuestion(
     maxRetries: 0,
     stopWhen: stepCountIs(50),
     includeRawChunks: true,
+    tools: { web_search: provider.tools.webSearch({}) },
     prepareStep() {
       consumeInput();
       return { messages: [...messages] };
@@ -203,10 +204,13 @@ async function answerQuestion(
       },
     },
     system:
-      "Ayudas a Mimi, la asistente de voz de IVAD Home & Goods, a responder la última petición del usuario. " +
+      "Ayudas a Mimi, la asistente de voz de IVAD Home & Goods (empresa de la República Dominicana), a responder la última petición del usuario. " +
       "Las transcripciones pueden estar incompletas o corregidas; usa la corrección más reciente. " +
+      "Tienes la herramienta web_search: úsala cuando la pregunta requiera datos actuales o externos (tasas, noticias, normas, precios). " +
+      "Busca solo con términos generales de la pregunta; nunca incluyas datos internos de IVAD, nombres de clientes ni cifras en las búsquedas. " +
       "Responde en español neutro, en texto plano apto para ser leído en voz alta (sin Markdown), en máximo 150 palabras. " +
-      "No inventes datos; si falta información, pide el detalle. No tienes herramientas externas.",
+      "Si usaste la búsqueda, nombra la fuente al final (por ejemplo: 'Fuente: Banco Central de la República Dominicana'). " +
+      "No inventes datos; si falta información, pide el detalle.",
     messages,
   });
   let completed = false;
