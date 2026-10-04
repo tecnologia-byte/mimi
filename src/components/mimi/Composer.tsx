@@ -26,7 +26,6 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
   const [value, setValue] = useState("");
   const [webSearch, setWebSearch] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const sendBtnRef = useRef<HTMLButtonElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<File[]>([]);
 
@@ -134,7 +133,6 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
           </Button>
         ) : (
           <Button
-            ref={sendBtnRef}
             size="icon"
             className="rounded-full"
             onClick={submit}
