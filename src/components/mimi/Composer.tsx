@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 
 export interface ComposerHandle {
   focus: () => void;
+  submitText: (text: string) => void;
 }
 
 interface ComposerProps {
@@ -26,6 +27,10 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
 
   useImperativeHandle(ref, () => ({
     focus: () => textareaRef.current?.focus(),
+    submitText: (text: string) => {
+      const trimmed = text.trim();
+      if (trimmed) onSend(trimmed);
+    },
   }));
 
   const submit = () => {
