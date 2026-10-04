@@ -2,10 +2,11 @@ import { useEffect, useRef } from "react";
 import type { UIMessage } from "ai";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Copy, Globe, Paperclip, RefreshCw, Star, ThumbsDown, ThumbsUp } from "lucide-react";
+import { Copy, FileSpreadsheet, FileText, Paperclip, RefreshCw, Star, ThumbsDown, ThumbsUp } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { exportExcel, exportWord } from "@/lib/office";
 import mimiAvatar from "@/assets/mimi-avatar.png.asset.json";
 
 function messageText(message: UIMessage): string {
@@ -91,7 +92,12 @@ export function MessageList({ messages, busy, onRegenerate }: MessageListProps) 
                         rel="noreferrer"
                         className="flex max-w-[220px] items-center gap-1 rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground hover:border-primary hover:text-primary"
                       >
-                        <Globe className="h-3 w-3 shrink-0" />
+                        <img
+                          src={`https://www.google.com/s2/favicons?domain=${new URL(s.url).hostname}&sz=32`}
+                          alt=""
+                          className="h-3.5 w-3.5 shrink-0 rounded-sm"
+                          loading="lazy"
+                        />
                         <span className="truncate">{s.title || new URL(s.url).hostname}</span>
                       </a>
                     ))}
@@ -108,6 +114,12 @@ export function MessageList({ messages, busy, onRegenerate }: MessageListProps) 
                       <RefreshCw className="h-3.5 w-3.5" />
                     </Button>
                   )}
+                  <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Descargar Word" title="Descargar como Word" onClick={() => void exportWord(text)}>
+                    <FileText className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Descargar Excel" title="Descargar como Excel" onClick={() => void exportExcel(text)}>
+                    <FileSpreadsheet className="h-3.5 w-3.5" />
+                  </Button>
                   <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Útil">
                     <ThumbsUp className="h-3.5 w-3.5" />
                   </Button>
