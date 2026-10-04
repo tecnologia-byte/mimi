@@ -10,6 +10,11 @@
 - [x] Fijar a Mimi al borde del cuadro de mensaje en móvil, tablet y escritorio
 - [x] Mostrar foto, nombre y correo de la cuenta de Google iniciada
 
+- [x] Voz en vivo con Mimi (transcripción guardada en el chat)
+- [x] Mimi dice que fue creada por el equipo de Tecnología de IVAD
+- [ ] Búsqueda web con Gemini (datos protegidos, solo se envía la pregunta)
+- [ ] Documentos: subir, guardar (solo visibles para quien los sube) y analizar
+
 ## Siguientes pasos del brief
 - [ ] Conocimientos (RAG con pgvector y citas)
 - [ ] Documentos (subida PDF/DOCX/XLSX/imágenes)
