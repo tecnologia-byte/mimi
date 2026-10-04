@@ -132,14 +132,14 @@ export const Route = createFileRoute("/api/chat")({
           : "";
         const agent = body.agent ?? "mimi";
         let agentBlock = "";
-        if (agent === "contadora" || agent === "logistica") {
-          agentBlock = `\n\n## Tu versión activa\n${SPECIALISTS[agent]}\nSi la tarea también necesita a la otra especialista, consúltala con la herramienta consultar_agente.`;
+        if (agent === "contadora" || agent === "logistica" || agent === "ejecutiva") {
+          agentBlock = `\n\n## Tu versión activa\n${SPECIALISTS[agent]}\nSi la tarea también necesita a otra especialista, consúltala con la herramienta consultar_agente.`;
         } else if (agent === "milt") {
           agentBlock =
-            "\n\n## Modo Milt\nEres la coordinadora de Milt, el equipo de agentes de IVAD. Para cada tarea divide el trabajo y consulta a Mimi Contadora y/o Mimi Logística con la herramienta consultar_agente (pueden ser varias consultas). Luego une sus respuestas en una solución final clara, indicando qué aportó cada agente.";
+            "\n\n## Modo Milt\nEres la coordinadora de Milt, el equipo de agentes de IVAD. Para cada tarea divide el trabajo y consulta a Mimi Contadora, Mimi Logística y/o Mimi Ejecutiva con la herramienta consultar_agente (pueden ser varias consultas). Luego une sus respuestas en una solución final clara, indicando qué aportó cada agente.";
         } else {
           agentBlock =
-            "\n\n## Milt\nPuedes consultar a Mimi Contadora (finanzas, impuestos) o Mimi Logística (inventario, envíos) con la herramienta consultar_agente cuando la pregunta lo requiera.";
+            "\n\n## Milt\nPuedes consultar a Mimi Contadora (finanzas, impuestos), Mimi Logística (inventario, envíos) o Mimi Ejecutiva (gerencia, reportes, decisiones) con la herramienta consultar_agente cuando la pregunta lo requiera.";
         }
         const { result, response } = createResponsesCall(
           request,
