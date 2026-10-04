@@ -3,6 +3,8 @@ import { ArrowUp, Globe, Mic, Paperclip, Plus, Square, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { ALLOWED_FILE_ACCEPT, isCodeFile } from "@/lib/files";
 
 export interface ComposerHandle {
   focus: () => void;
@@ -72,9 +74,11 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
         type="file"
         multiple
         hidden
-        accept=".pdf,.docx,.xlsx,.xls,.txt,.md,.csv,.json,image/*"
+        accept={ALLOWED_FILE_ACCEPT}
         onChange={(e) => {
-          const picked = Array.from(e.target.files ?? []).filter((f) => f.size <= 20 * 1024 * 1024);
+          const all = Array.from(e.target.files ?? []);
+          if (all.some(isCodeFile)) toast.error("Mimi no acepta archivos de código. Sube documentos, imágenes u hojas de cálculo.");
+          const picked = all.filter((f) => !isCodeFile(f) && f.size <= 20 * 1024 * 1024);
           setFiles((prev) => [...prev, ...picked].slice(0, 5));
           e.target.value = "";
         }}

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/mimi/AppShell";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { ALLOWED_FILE_ACCEPT, isCodeFile } from "@/lib/files";
 
 export const Route = createFileRoute("/documentos")({
   head: () => ({
@@ -97,9 +98,13 @@ function DocumentsList({ userId }: { userId: string }) {
           type="file"
           multiple
           hidden
-          accept=".pdf,.txt,.md,.csv,.json,.docx,.xlsx,image/*"
+          accept={ALLOWED_FILE_ACCEPT}
           onChange={(e) => {
-            void upload(e.target.files);
+            const all = Array.from(e.target.files ?? []);
+            if (all.some(isCodeFile)) toast.error("Mimi no acepta archivos de código.");
+            const dt = new DataTransfer();
+            all.filter((f) => !isCodeFile(f)).forEach((f) => dt.items.add(f));
+            void upload(dt.files);
             e.target.value = "";
           }}
         />
