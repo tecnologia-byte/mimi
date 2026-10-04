@@ -48,22 +48,6 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
     },
   });
 
-  // Send the first message that created this thread (from the welcome screen).
-  // Deferred past mount: sending synchronously during the first commit races
-  // with useChat's internal initialization and the request never fires.
-  useEffect(() => {
-    if (sentPending.current) return;
-    const pending = sessionStorage.getItem(PENDING_MESSAGE_KEY);
-    if (!pending) return;
-    const draft = takePendingChatDraft();
-    sentPending.current = true;
-    const timer = setTimeout(() => {
-      sessionStorage.removeItem(PENDING_MESSAGE_KEY);
-      composerRef.current?.fillAndSubmit(draft?.text ?? pending, draft?.files, draft?.webSearch);
-    }, 800);
-    return () => clearTimeout(timer);
-  }, [sendMessage]);
-
   const handleSend = useCallback(
     async (text: string, opts: { webSearch: boolean; files: File[] }) => {
       let fullText = text;
@@ -99,6 +83,22 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
     },
     [sendMessage],
   );
+
+  // Send the first message after useChat has mounted. Calling handleSend
+  // directly avoids losing the timer when React refreshes this component.
+  useEffect(() => {
+    if (sentPending.current) return;
+    const pending = sessionStorage.getItem(PENDING_MESSAGE_KEY);
+    if (pending === null) return;
+
+    const draft = takePendingChatDraft();
+    sentPending.current = true;
+    sessionStorage.removeItem(PENDING_MESSAGE_KEY);
+    void handleSend(
+      draft?.text ?? pending,
+      { webSearch: draft?.webSearch ?? false, files: draft?.files ?? [] },
+    );
+  }, [handleSend]);
 
   const [voiceOpen, setVoiceOpen] = useState(false);
   useEffect(() => {
