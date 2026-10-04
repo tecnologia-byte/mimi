@@ -15,6 +15,7 @@ import { Route as ConocimientosRouteImport } from './routes/conocimientos'
 import { Route as DocumentosRouteImport } from './routes/documentos'
 import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as HerramientasRouteImport } from './routes/herramientas'
+import { Route as MiltRouteImport } from './routes/milt'
 import { Route as PlantillasRouteImport } from './routes/plantillas'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ChatThreadIdRouteImport } from './routes/chat.$threadId'
@@ -49,6 +50,11 @@ const HerramientasRoute = HerramientasRouteImport.update({
   path: '/herramientas',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MiltRoute = MiltRouteImport.update({
+  id: '/milt',
+  path: '/milt',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PlantillasRoute = PlantillasRouteImport.update({
   id: '/plantillas',
   path: '/plantillas',
@@ -72,6 +78,7 @@ export interface FileRoutesByFullPath {
   '/documentos': typeof DocumentosRoute
   '/favoritos': typeof FavoritosRoute
   '/herramientas': typeof HerramientasRoute
+  '/milt': typeof MiltRoute
   '/plantillas': typeof PlantillasRoute
   '/api/chat': typeof ApiChatRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
@@ -83,6 +90,7 @@ export interface FileRoutesByTo {
   '/documentos': typeof DocumentosRoute
   '/favoritos': typeof FavoritosRoute
   '/herramientas': typeof HerramientasRoute
+  '/milt': typeof MiltRoute
   '/plantillas': typeof PlantillasRoute
   '/api/chat': typeof ApiChatRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
@@ -95,6 +103,7 @@ export interface FileRoutesById {
   '/documentos': typeof DocumentosRoute
   '/favoritos': typeof FavoritosRoute
   '/herramientas': typeof HerramientasRoute
+  '/milt': typeof MiltRoute
   '/plantillas': typeof PlantillasRoute
   '/api/chat': typeof ApiChatRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
@@ -108,6 +117,7 @@ export interface FileRouteTypes {
     | '/documentos'
     | '/favoritos'
     | '/herramientas'
+    | '/milt'
     | '/plantillas'
     | '/api/chat'
     | '/chat/$threadId'
@@ -119,6 +129,7 @@ export interface FileRouteTypes {
     | '/documentos'
     | '/favoritos'
     | '/herramientas'
+    | '/milt'
     | '/plantillas'
     | '/api/chat'
     | '/chat/$threadId'
@@ -130,6 +141,7 @@ export interface FileRouteTypes {
     | '/documentos'
     | '/favoritos'
     | '/herramientas'
+    | '/milt'
     | '/plantillas'
     | '/api/chat'
     | '/chat/$threadId'
@@ -142,6 +154,7 @@ export interface RootRouteChildren {
   DocumentosRoute: typeof DocumentosRoute
   FavoritosRoute: typeof FavoritosRoute
   HerramientasRoute: typeof HerramientasRoute
+  MiltRoute: typeof MiltRoute
   PlantillasRoute: typeof PlantillasRoute
   ApiChatRoute: typeof ApiChatRoute
   ChatThreadIdRoute: typeof ChatThreadIdRoute
@@ -191,6 +204,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HerramientasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/milt': {
+      id: '/milt'
+      path: '/milt'
+      fullPath: '/milt'
+      preLoaderRoute: typeof MiltRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/plantillas': {
       id: '/plantillas'
       path: '/plantillas'
@@ -222,6 +242,7 @@ const rootRouteChildren: RootRouteChildren = {
   DocumentosRoute: DocumentosRoute,
   FavoritosRoute: FavoritosRoute,
   HerramientasRoute: HerramientasRoute,
+  MiltRoute: MiltRoute,
   PlantillasRoute: PlantillasRoute,
   ApiChatRoute: ApiChatRoute,
   ChatThreadIdRoute: ChatThreadIdRoute,

@@ -2,7 +2,8 @@ import { useEffect, useRef } from "react";
 import type { UIMessage } from "ai";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Copy, FileSpreadsheet, FileText, Paperclip, RefreshCw, Star, ThumbsDown, ThumbsUp } from "lucide-react";
+import { Copy, FileSpreadsheet, FileText, Paperclip, RefreshCw, Star, ThumbsDown, ThumbsUp, Users } from "lucide-react";
+import { agentName } from "@/lib/agents";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -81,6 +82,23 @@ export function MessageList({ messages, busy, onRegenerate }: MessageListProps) 
               className="h-9 w-9 shrink-0 rounded-full border border-border object-cover object-top"
             />
             <div className="min-w-0 flex-1">
+              {message.parts.map((p, i) => {
+                if (p.type !== "tool-consultar_agente") return null;
+                const tp = p as { input?: { agente?: string; tarea?: string }; output?: { respuesta?: string }; state?: string };
+                const name = agentName(tp.input?.agente ?? "");
+                return (
+                  <details key={i} className="mb-2 rounded-xl border border-border bg-accent/40 px-3 py-2 text-xs">
+                    <summary className="flex cursor-pointer items-center gap-2 font-medium text-accent-foreground">
+                      <Users className="h-3.5 w-3.5 text-primary" />
+                      Milt · {tp.output ? `${name} respondió` : `Consultando a ${name}...`}
+                    </summary>
+                    {tp.input?.tarea && <p className="mt-2 text-muted-foreground"><b>Tarea:</b> {tp.input.tarea}</p>}
+                    {tp.output?.respuesta && (
+                      <div className="mt-2 whitespace-pre-wrap text-foreground">{tp.output.respuesta}</div>
+                    )}
+                  </details>
+                );
+              })}
               <div className="prose-sm max-w-none text-sm leading-relaxed text-foreground [&_code]:rounded [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_h1]:mb-2 [&_h1]:text-lg [&_h1]:font-semibold [&_h2]:mb-2 [&_h2]:text-base [&_h2]:font-semibold [&_h3]:mb-1 [&_h3]:font-semibold [&_li]:my-0.5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:my-2 [&_pre]:my-3 [&_pre]:overflow-x-auto [&_pre]:rounded-xl [&_pre]:bg-muted [&_pre]:p-3 [&_table]:my-3 [&_td]:border [&_td]:border-border [&_td]:px-2 [&_td]:py-1 [&_th]:border [&_th]:border-border [&_th]:bg-muted [&_th]:px-2 [&_th]:py-1 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
               </div>

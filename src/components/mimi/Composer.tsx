@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { ALLOWED_FILE_ACCEPT, isCodeFile } from "@/lib/files";
+import { AGENTS, getActiveAgent, setActiveAgent, type AgentId } from "@/lib/agents";
 
 export interface ComposerHandle {
   focus: () => void;
@@ -43,9 +44,16 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
     [imagePreviews],
   );
 
-  // Modelos de Mimi disponibles. Por ahora solo Mimi Flash 1.5.
-  const MIMI_MODELS = [{ id: "mimi-flash-1.5", name: "Mimi Flash 1.5", tag: "Rápido" }];
-  const activeModel = MIMI_MODELS[0]!;
+  // Versiones de Mimi (agentes) + Milt.
+  const MIMI_MODELS = AGENTS;
+  const [agentId, setAgentId] = useState<AgentId>("mimi");
+  useEffect(() => {
+    const sync = () => setAgentId(getActiveAgent());
+    sync();
+    window.addEventListener("mimi-agent", sync);
+    return () => window.removeEventListener("mimi-agent", sync);
+  }, []);
+  const activeModel = AGENTS.find((a) => a.id === agentId) ?? AGENTS[0]!;
 
   useImperativeHandle(ref, () => ({
     focus: () => textareaRef.current?.focus(),
@@ -149,7 +157,10 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
                   <button
                     key={m.id}
                     type="button"
-                    onClick={() => setModelMenuOpen(false)}
+                    onClick={() => {
+                      setActiveAgent(m.id);
+                      setModelMenuOpen(false);
+                    }}
                     className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left text-sm text-popover-foreground hover:bg-accent"
                   >
                     <span className="flex-1">

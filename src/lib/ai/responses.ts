@@ -1,5 +1,5 @@
 import { createOpenAI } from "@ai-sdk/openai";
-import { streamText, type ModelMessage } from "ai";
+import { stepCountIs, streamText, type ModelMessage, type ToolSet } from "ai";
 
 import {
   createLovableAiGatewayRunIdFetch,
@@ -9,7 +9,7 @@ import {
 
 export function createResponsesCall(
   request: Request,
-  config: { baseURL: string; apiKey: string; model: string; system?: string; webSearch?: boolean },
+  config: { baseURL: string; apiKey: string; model: string; system?: string; webSearch?: boolean; tools?: ToolSet },
   messages: ModelMessage[],
 ) {
   const runIdFetch = createLovableAiGatewayRunIdFetch(getLovableAiGatewayRunId(request));
@@ -20,18 +20,21 @@ export function createResponsesCall(
     fetch: runIdFetch.fetch,
   });
   const reasoning = config.model !== "openai/chat-latest";
+  const tools: ToolSet = {
+    ...(config.tools ?? {}),
+    ...(config.webSearch ? { web_search: provider.tools.webSearch({}) } : {}),
+  };
+  const system =
+    (config.system ?? "") +
+    (config.webSearch
+      ? "\n\nBúsqueda web activada: busca en internet solo con términos generales de la pregunta. Nunca incluyas en las búsquedas datos internos, nombres de clientes, cifras ni contenido de documentos de IVAD. Cita las fuentes con enlaces."
+      : "");
   const result = streamText({
     model: provider.responses(config.model),
     messages,
-    ...(config.system ? { system: config.system } : {}),
-    ...(config.webSearch
-      ? {
-          tools: { web_search: provider.tools.webSearch({}) },
-          system:
-            (config.system ?? "") +
-            "\n\nBúsqueda web activada: busca en internet solo con términos generales de la pregunta. Nunca incluyas en las búsquedas datos internos, nombres de clientes, cifras ni contenido de documentos de IVAD. Cita las fuentes con enlaces.",
-        }
-      : {}),
+    ...(system ? { system } : {}),
+    ...(Object.keys(tools).length ? { tools, stopWhen: stepCountIs(50) } : {}),
+
     abortSignal: request.signal,
     providerOptions: {
       openai: {
