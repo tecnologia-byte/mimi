@@ -26,7 +26,7 @@ export function AppShell({ children }: { children: (userId: string) => ReactNode
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full overflow-hidden bg-background">
-        <MimiSidebar />
+        <MimiSidebar user={user} />
         <div className="relative flex min-w-0 flex-1 flex-col">
           <header className="flex h-14 shrink-0 items-center justify-between px-3">
             <SidebarTrigger />
