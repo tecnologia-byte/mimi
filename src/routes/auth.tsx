@@ -8,7 +8,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import mimiAvatar from "@/assets/mimi-avatar.png.asset.json";
+import ivadLogo from "@/assets/ivad-logo.png.asset.json";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({

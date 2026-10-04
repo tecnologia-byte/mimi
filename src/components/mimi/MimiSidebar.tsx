@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
+import ivadLogo from "@/assets/ivad-logo.png.asset.json";
 
 import {
   Sidebar,
