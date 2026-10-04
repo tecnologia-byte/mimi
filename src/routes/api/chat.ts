@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
-import { convertToModelMessages, type UIMessage } from "ai";
+import { createOpenAI } from "@ai-sdk/openai";
+import { convertToModelMessages, generateText, type UIMessage } from "ai";
 
 import { createResponsesCall } from "@/lib/ai/responses";
 import { MIMI_SYSTEM_PROMPT } from "@/lib/mimi";
@@ -10,6 +11,29 @@ function messageText(message: UIMessage): string {
     .filter((part): part is { type: "text"; text: string } => part.type === "text")
     .map((part) => part.text)
     .join("");
+}
+
+/** Creates a short, topical chat title (e.g. "Temas de la DGII") from the first message. */
+async function generateChatTitle(firstMessage: string): Promise<string> {
+  const fallback = firstMessage.slice(0, 48) || "Nuevo chat";
+  const apiKey = process.env["LOVABLE_API_KEY"];
+  if (!apiKey || !firstMessage.trim()) return fallback;
+  try {
+    const provider = createOpenAI({
+      baseURL: "https://ai.gateway.lovable.dev/v1",
+      apiKey,
+      headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
+    });
+    const { text } = await generateText({
+      model: provider("openai/gpt-6-astra"),
+      prompt: `Genera un título muy corto (máximo 5 palabras, en español, sin comillas ni punto final) que resuma el tema de este mensaje. Responde solo con el título.\n\nMensaje: ${firstMessage.slice(0, 500)}`,
+    });
+    const title = text.trim().replace(/^["']|["']$/g, "").slice(0, 60);
+    return title || fallback;
+  } catch (error) {
+    console.error("No se pudo generar el título del chat:", error);
+    return fallback;
+  }
 }
 
 export const Route = createFileRoute("/api/chat")({
@@ -79,7 +103,7 @@ export const Route = createFileRoute("/api/chat")({
               console.error("No se pudo guardar el mensaje del usuario:", insertError);
             }
             if (thread.title === "Nuevo chat") {
-              const title = messageText(lastUser).slice(0, 48) || "Nuevo chat";
+              const title = await generateChatTitle(messageText(lastUser));
               await supabase.from("threads").update({ title, updated_at: new Date().toISOString() }).eq("id", threadId);
             } else {
               await supabase.from("threads").update({ updated_at: new Date().toISOString() }).eq("id", threadId);
