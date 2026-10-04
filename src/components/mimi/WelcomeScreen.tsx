@@ -81,14 +81,14 @@ export function WelcomeScreen({ userId }: { userId: string }) {
               const Icon = suggestionIcons[i % suggestionIcons.length];
               return (
                 <button
-                  key={s}
+                  key={s.title}
                   type="button"
                   disabled={busy}
-                  onClick={() => startChat(s)}
+                  onClick={() => startChat(s.prompt)}
                   className="rounded-2xl border border-border bg-card p-4 text-left transition-colors hover:border-primary/50 hover:bg-accent disabled:opacity-50"
                 >
                   <Icon className="mb-3 h-5 w-5 text-foreground" />
-                  <span className="text-sm text-muted-foreground">{s}</span>
+                  <span className="text-sm text-muted-foreground">{s.title}</span>
                 </button>
               );
             })}
