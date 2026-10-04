@@ -39,11 +39,11 @@ export function WelcomeScreen({ userId }: { userId: string }) {
         IVAD
       </span>
 
-      {/* Mimi hero, top right, unboxed */}
+      {/* Mimi stays visually anchored just above the message box. */}
       <img
         src={mimiHero.url}
         alt="Mimi, asistente de IVAD"
-        className="pointer-events-none absolute right-6 top-6 hidden w-64 select-none object-contain md:block lg:w-80"
+        className="pointer-events-none absolute right-3 top-[42%] hidden w-56 -translate-y-1/2 select-none object-contain md:block lg:right-6 lg:w-72 xl:w-80"
       />
 
       <div className="relative mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center gap-4 px-4 py-6 sm:gap-5 sm:py-14">

@@ -15,6 +15,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { toast } from "sonner";
+import type { User } from "@supabase/supabase-js";
 
 import {
   Sidebar,
@@ -39,7 +40,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchThreads, threadsQueryKey, type Thread } from "@/lib/threads";
-import mimiAvatar from "@/assets/mimi-avatar.png.asset.json";
 
 const sections = [
   { title: "Conocimientos", icon: BookOpen },
@@ -69,12 +69,21 @@ function groupThreads(threads: Thread[]) {
   return groups.filter((g) => g.items.length > 0);
 }
 
-export function MimiSidebar() {
+export function MimiSidebar({ user }: { user: User }) {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (r) => r.location.pathname });
+  const accountName =
+    (typeof user.user_metadata["full_name"] === "string" && user.user_metadata["full_name"]) ||
+    (typeof user.user_metadata["name"] === "string" && user.user_metadata["name"]) ||
+    "Usuario IVAD";
+  const accountAvatar =
+    (typeof user.user_metadata["avatar_url"] === "string" && user.user_metadata["avatar_url"]) ||
+    (typeof user.user_metadata["picture"] === "string" && user.user_metadata["picture"]) ||
+    null;
+  const accountInitial = accountName.trim().charAt(0).toUpperCase() || "U";
 
   const { data: threads = [] } = useQuery({ queryKey: threadsQueryKey, queryFn: fetchThreads });
 
@@ -215,13 +224,24 @@ export function MimiSidebar() {
       <SidebarFooter>
         <div className="flex items-center gap-3 px-1 py-2">
           <div className="relative shrink-0">
-            <img src={mimiAvatar.url} alt="Mimi" className="h-9 w-9 rounded-full border border-border object-cover object-top" />
+            {accountAvatar ? (
+              <img
+                src={accountAvatar}
+                alt={accountName}
+                referrerPolicy="no-referrer"
+                className="h-9 w-9 rounded-full border border-border object-cover"
+              />
+            ) : (
+              <div className="flex h-9 w-9 items-center justify-center rounded-full border border-primary/50 bg-primary/15 text-sm font-semibold text-primary">
+                {accountInitial}
+              </div>
+            )}
             <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-sidebar bg-online" />
           </div>
           {!collapsed && (
             <div className="min-w-0 flex-1 leading-tight">
-              <p className="text-sm font-medium">IA de IVAD</p>
-              <p className="truncate text-xs text-muted-foreground">Asistente inteligente siempre lista para ayudarte</p>
+              <p className="truncate text-sm font-medium">{accountName}</p>
+              <p className="truncate text-xs text-muted-foreground">{user.email ?? "Cuenta de Google"}</p>
               <p className="mt-0.5 flex items-center gap-1 text-xs text-online">● En línea</p>
             </div>
           )}
