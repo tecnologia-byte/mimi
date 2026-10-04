@@ -15,6 +15,7 @@ import {
   Trash2,
   Wrench,
   Users,
+  ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
@@ -43,6 +44,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchThreads, threadsQueryKey, type Thread } from "@/lib/threads";
+import { db, fetchMyPendingRequest, fetchMyRoles, myRolesKey } from "@/lib/roles";
 
 const sections = [
   { title: "Conocimientos", icon: BookOpen, to: "/conocimientos" },
@@ -105,6 +107,23 @@ export function MimiSidebar({ user }: { user: User }) {
   const accountInitial = accountName.trim().charAt(0).toUpperCase() || "U";
 
   const { data: threads = [] } = useQuery({ queryKey: threadsQueryKey, queryFn: fetchThreads });
+  const { data: myRoles = [] } = useQuery({ queryKey: myRolesKey(user.id), queryFn: () => fetchMyRoles(user.id) });
+  const { data: pendingRequest = false } = useQuery({
+    queryKey: ["my-access-request", user.id],
+    queryFn: () => fetchMyPendingRequest(user.id),
+  });
+  const isAdmin = myRoles.includes("administrador");
+  const hasExec = isAdmin || myRoles.includes("ejecutivo");
+
+  const requestAccess = async () => {
+    const { error } = await db.from("access_requests").insert({ user_id: user.id, requested_role: "ejecutivo" });
+    if (error) {
+      toast.error("No se pudo enviar la solicitud");
+      return;
+    }
+    toast.success("Solicitud enviada. Un administrador la revisará.");
+    queryClient.invalidateQueries({ queryKey: ["my-access-request", user.id] });
+  };
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: threadsQueryKey });
 
@@ -173,6 +192,12 @@ export function MimiSidebar({ user }: { user: User }) {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              <SidebarMenuItem>
+                <SidebarMenuButton tooltip="Administración" isActive={pathname === "/admin"} onClick={() => navigate({ to: "/admin" })}>
+                  <ShieldCheck className="h-4 w-4" />
+                  <span>Administración</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -218,19 +243,20 @@ export function MimiSidebar({ user }: { user: User }) {
             </SidebarGroup>
           ))}
 
-        {!collapsed && (
+        {!collapsed && !hasExec && (
           <div className="mx-2 mt-2 rounded-2xl border border-primary/30 bg-sidebar-accent p-4">
-            <p className="text-sm font-semibold text-primary">Mimi Ejecutiva ✦</p>
+            <p className="text-sm font-semibold text-primary">Mimi Ejecutiva</p>
             <p className="mt-1 text-xs text-muted-foreground">
               Acceso a análisis avanzado y herramientas de nivel corporativo.
             </p>
             <Button
               size="sm"
               variant="outline"
+              disabled={pendingRequest}
               className="mt-3 w-full border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground"
-              onClick={() => toast.success("Solicitud enviada. Un administrador la revisará.")}
+              onClick={requestAccess}
             >
-              Solicitar acceso
+              {pendingRequest ? "Solicitud enviada" : "Solicitar acceso"}
             </Button>
           </div>
         )}
