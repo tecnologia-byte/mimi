@@ -71,7 +71,7 @@ function AuthPage() {
       <div className="watermark-ivad" aria-hidden>
         IVAD
       </div>
-      <div className="relative z-10 w-full max-w-md rounded-3xl border border-border bg-card/80 p-8 shadow-2xl backdrop-blur">
+      <div className="relative z-10 w-full max-w-md rounded-3xl border border-border bg-card/80 p-6 sm:p-8 shadow-2xl backdrop-blur">
         <div className="mb-6 flex flex-col items-center text-center">
           <img
             src={mimiAvatar.url}
