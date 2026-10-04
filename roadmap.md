@@ -21,3 +21,5 @@
 - [ ] Panel de administración (roles, auditoría)
 - [x] Favoritos, Plantillas, Herramientas
 - [ ] Acciones de mensaje: exportar PDF/Word, regenerar con persistencia
+
+- [ ] Modelos de Mimi seleccionables (siguiente paso)
