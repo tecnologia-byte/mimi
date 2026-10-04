@@ -25,3 +25,6 @@
 - [ ] Modelos de Mimi seleccionables (siguiente paso)
 - [x] Selector inicial con Mimi Flash 1.5
 - [x] Adjuntar documentos e imágenes desde el primer mensaje con vista previa
+
+- [x] Mimi Contadora, Mimi Logística y Milt (agentes)
+- [ ] Gmail y Drive: conexión simple con cuenta de Google de IVAD (el usuario no puede crear permisos de Google)
