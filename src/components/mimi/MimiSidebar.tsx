@@ -120,18 +120,12 @@ export function MimiSidebar({ user }: { user: User }) {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <div className="flex items-center gap-2 px-1 py-2">
+        <div className="flex items-center px-1 py-2">
           <img
             src={ivadLogo.url}
             alt="IVAD Home & Goods"
-            className="h-9 w-9 shrink-0 rounded-full object-cover"
+            className="h-14 w-14 shrink-0 rounded-xl object-cover"
           />
-          {!collapsed && (
-            <div className="min-w-0 leading-tight">
-              <p className="truncate text-sm font-semibold">IVAD</p>
-              <p className="truncate text-xs text-muted-foreground">Home & Goods</p>
-            </div>
-          )}
         </div>
         <SidebarMenu>
           <SidebarMenuItem>
