@@ -148,7 +148,12 @@ export function MimiSidebar({ user }: { user: User }) {
             <SidebarMenu>
               {sections.map((s) => (
                 <SidebarMenuItem key={s.title}>
-                  <SidebarMenuButton tooltip={s.title} onClick={() => toast(`${s.title} estará disponible pronto`)}>
+                  <SidebarMenuButton tooltip={s.title} onClick={() =>
+                      s.title === "Documentos"
+                        ? navigate({ to: "/documentos" })
+                        : toast(`${s.title} estará disponible pronto`)
+                    }
+                  >
                     <s.icon className="h-4 w-4" />
                     <span>{s.title}</span>
                   </SidebarMenuButton>
