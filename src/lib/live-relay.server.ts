@@ -1,6 +1,7 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { createClient } from "@supabase/supabase-js";
-import { stepCountIs, streamText, type ModelMessage } from "ai";
+import { stepCountIs, streamText, tool, type ModelMessage } from "ai";
+import { z } from "zod";
 import process from "node:process";
 
 export type LiveConfig = {
@@ -135,7 +136,7 @@ const conversationInstructions = `Eres Mimi, la asistente de inteligencia artifi
 IVAD Home & Goods es una empresa de la República Dominicana que vende desechables (vasos, platos, cubiertos y más) y decoraciones (muebles, artículos de mesa y mucho más). Eres una IA exclusiva de esa empresa. Nunca preguntes de qué país es la empresa ni de qué país habla la persona: ya sabes que es la República Dominicana; asume ese contexto siempre.
 Cuando la respuesta venga de una investigación web, menciona de dónde salió la información (por ejemplo: "según el Banco Central" o "de acuerdo con la DGII").
 Habla siempre en español neutro latinoamericano, con voz cálida, amable y profesional, a ritmo pausado y claro.
-Da respuestas breves y naturales para conversación hablada. Si algo no está claro, haz una pregunta concreta.
+Da respuestas breves y naturales para conversación hablada. No hagas preguntas de aclaración para temas investigables: si la persona dice siglas mal pronunciadas (por ejemplo "DGEI" o "DGI"), interpreta la institución dominicana más probable (DGII) y delega la investigación de inmediato. Sí tienes acceso a internet y a cualquier página web a través del backend; nunca digas que no puedes navegar.
 Si no sabes algo, dilo con honestidad; nunca inventes datos. Pide confirmación antes de cualquier acción delicada.
 Nunca compartas información confidencial de IVAD con quien no tenga el rol adecuado.
 Backchannel policy: Usa sonidos de escucha moderados ("ajá", "entiendo") sin quitar la palabra.
@@ -174,7 +175,31 @@ async function answerQuestion(
     maxRetries: 0,
     stopWhen: stepCountIs(50),
     includeRawChunks: true,
-    tools: { web_search: provider.tools.webSearch({}) },
+    tools: {
+      web_search: provider.tools.webSearch({ userLocation: { type: "approximate", country: "DO" } }),
+      open_page: tool({
+        description: "Abre una página web pública y devuelve su texto para leerla.",
+        inputSchema: z.object({ url: z.string() }),
+        execute: async ({ url }) => {
+          try {
+            const target = new URL(url.startsWith("http") ? url : `https://${url}`);
+            if (!/^https?:$/.test(target.protocol)) return { error: "URL no válida" };
+            const res = await fetch(target, { signal, headers: { "User-Agent": "Mozilla/5.0 MimiIVAD" } });
+            const html = await res.text();
+            const text = html
+              .replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, " ")
+              .replace(/<[^>]+>/g, " ")
+              .replace(/&nbsp;/g, " ")
+              .replace(/\s+/g, " ")
+              .trim()
+              .slice(0, 8000);
+            return { url: target.toString(), status: res.status, text };
+          } catch (e) {
+            return { error: e instanceof Error ? e.message : "No se pudo abrir la página" };
+          }
+        },
+      }),
+    },
     prepareStep() {
       consumeInput();
       return { messages: [...messages] };
@@ -206,11 +231,13 @@ async function answerQuestion(
     system:
       "Ayudas a Mimi, la asistente de voz de IVAD Home & Goods (empresa de la República Dominicana), a responder la última petición del usuario. " +
       "Las transcripciones pueden estar incompletas o corregidas; usa la corrección más reciente. " +
-      "Tienes la herramienta web_search: úsala SIEMPRE que la pregunta requiera datos actuales o externos (tasas, noticias, normas, precios, clima, fechas), sin excepción; no respondas esos temas de memoria. " +
+      "Tienes la herramienta web_search: úsala SIEMPRE que la pregunta requiera datos actuales o externos (tasas, noticias, normas, precios, clima, fechas, instituciones), sin excepción; no respondas esos temas de memoria. " +
+      "Tienes también open_page para abrir y leer cualquier página web (por ejemplo dgii.gov.do, bancentral.gov.do o una URL que diga la persona); úsala para confirmar detalles. " +
+      "El contexto es siempre la República Dominicana: nunca preguntes el país. Interpreta siglas mal transcritas con la institución dominicana más probable (DGEI/DGI = DGII, TSS, Banco Central, etc.) e investiga directamente sin pedir confirmación. " +
       "Busca solo con términos generales de la pregunta; nunca incluyas datos internos de IVAD, nombres de clientes ni cifras en las búsquedas. " +
       "Responde en español neutro, en texto plano apto para ser leído en voz alta (sin Markdown), en máximo 150 palabras. " +
-      "Si usaste la búsqueda, nombra la fuente al final (por ejemplo: 'Fuente: Banco Central de la República Dominicana'). " +
-      "No inventes datos; si falta información, pide el detalle.",
+      "Nombra siempre la fuente al final con el nombre del sitio (por ejemplo: 'Fuente: DGII, dgii.gov.do'). " +
+      "No inventes datos; pide detalles solo si es imposible investigar.",
     messages,
   });
   let completed = false;
