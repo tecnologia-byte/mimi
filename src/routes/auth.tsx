@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,6 +31,16 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const handleGoogle = async () => {
+    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+    if (result.error) {
+      toast.error("No se pudo iniciar sesión con Google");
+      return;
+    }
+    if (result.redirected) return;
+    navigate({ to: "/" });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,7 +71,7 @@ function AuthPage() {
       <div className="watermark-ivad" aria-hidden>
         IVAD
       </div>
-      <div className="relative z-10 w-full max-w-md rounded-3xl border border-border bg-card/80 p-8 shadow-2xl backdrop-blur">
+      <div className="relative z-10 w-full max-w-md rounded-3xl border border-border bg-card/80 p-6 sm:p-8 shadow-2xl backdrop-blur">
         <div className="mb-6 flex flex-col items-center text-center">
           <img
             src={mimiAvatar.url}
@@ -114,6 +125,16 @@ function AuthPage() {
             {mode === "login" ? "Entrar" : "Crear cuenta"}
           </Button>
         </form>
+
+        <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
+          <div className="h-px flex-1 bg-border" /> o <div className="h-px flex-1 bg-border" />
+        </div>
+        <Button type="button" variant="outline" className="w-full" onClick={handleGoogle}>
+          <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" aria-hidden>
+            <path fill="currentColor" d="M21.35 11.1H12v2.98h5.35c-.23 1.4-1.6 4.1-5.35 4.1-3.22 0-5.85-2.67-5.85-5.96S8.78 6.26 12 6.26c1.83 0 3.06.78 3.76 1.45l2.56-2.47C16.68 3.7 14.55 2.7 12 2.7 6.87 2.7 2.7 6.87 2.7 12s4.17 9.3 9.3 9.3c5.37 0 8.93-3.77 8.93-9.09 0-.61-.07-1.08-.16-1.55z" />
+          </svg>
+          Continuar con Google
+        </Button>
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
           {mode === "login" ? "¿Aún no tienes cuenta?" : "¿Ya tienes cuenta?"}{" "}
