@@ -32,11 +32,11 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
 
   useImperativeHandle(ref, () => ({
     focus: () => textareaRef.current?.focus(),
-    // Fills the textarea and clicks the real send button so the send goes
-    // through the exact same event path as a manual click.
+    // Sends the text straight through onSend. Clicking the real send button
+    // raced with the disabled state and silently did nothing.
     fillAndSubmit: (text: string) => {
-      setValue(text);
-      setTimeout(() => sendBtnRef.current?.click(), 60);
+      setValue("");
+      onSend(text, { webSearch, files: [] });
     },
   }));
 
