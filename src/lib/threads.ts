@@ -31,3 +31,22 @@ export async function createThread(userId: string): Promise<Thread> {
 export const PENDING_MESSAGE_KEY = "mimi-pending-message";
 
 export const PENDING_VOICE_KEY = "mimi-pending-voice";
+
+export type PendingChatDraft = {
+  text: string;
+  files: File[];
+  webSearch: boolean;
+};
+
+let pendingChatDraft: PendingChatDraft | null = null;
+
+export function setPendingChatDraft(draft: PendingChatDraft) {
+  pendingChatDraft = draft;
+  sessionStorage.setItem(PENDING_MESSAGE_KEY, draft.text);
+}
+
+export function takePendingChatDraft(): PendingChatDraft | null {
+  const draft = pendingChatDraft;
+  pendingChatDraft = null;
+  return draft;
+}

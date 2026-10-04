@@ -23,3 +23,5 @@
 - [ ] Acciones de mensaje: exportar PDF/Word, regenerar con persistencia
 
 - [ ] Modelos de Mimi seleccionables (siguiente paso)
+- [x] Selector inicial con Mimi Flash 1.5
+- [x] Adjuntar documentos e imágenes desde el primer mensaje con vista previa

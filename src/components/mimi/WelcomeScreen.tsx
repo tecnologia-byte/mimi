@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { BarChart3, BookOpen, Lightbulb, PenLine, Sparkles } from "lucide-react";
+import { BarChart3, BookOpen, Lightbulb, PenLine } from "lucide-react";
 import { toast } from "sonner";
 
 import { AboutMimiModal } from "./AboutMimiModal";
 import { Composer } from "./Composer";
-import { createThread, PENDING_MESSAGE_KEY, PENDING_VOICE_KEY } from "@/lib/threads";
+import { createThread, PENDING_VOICE_KEY, setPendingChatDraft } from "@/lib/threads";
 import { MIMI_SUGGESTIONS } from "@/lib/mimi";
 import mimiHero from "@/assets/mimi-hero-cutout.png";
 
@@ -16,13 +16,17 @@ export function WelcomeScreen({ userId }: { userId: string }) {
   const [aboutOpen, setAboutOpen] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  const startChat = async (text: string, voice = false) => {
+  const startChat = async (
+    text: string,
+    voice = false,
+    options: { webSearch: boolean; files: File[] } = { webSearch: false, files: [] },
+  ) => {
     if (busy) return;
     setBusy(true);
     try {
       const thread = await createThread(userId);
       if (voice) sessionStorage.setItem(PENDING_VOICE_KEY, "1");
-      else sessionStorage.setItem(PENDING_MESSAGE_KEY, text);
+      else setPendingChatDraft({ text, files: options.files, webSearch: options.webSearch });
       navigate({ to: "/chat/$threadId", params: { threadId: thread.id } });
     } catch {
       setBusy(false);
@@ -57,7 +61,6 @@ export function WelcomeScreen({ userId }: { userId: string }) {
             onClick={() => setAboutOpen(true)}
             className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            <Sparkles className="h-4 w-4" />
             Conocer más sobre mí
           </button>
         </div>
@@ -71,7 +74,7 @@ export function WelcomeScreen({ userId }: { userId: string }) {
             />
           </div>
           <div className="relative z-10">
-            <Composer onSend={(t) => startChat(t)} onVoice={() => startChat("", true)} busy={busy} large allowAttach={false} />
+            <Composer onSend={(text, options) => startChat(text, false, options)} onVoice={() => startChat("", true)} busy={busy} large />
           </div>
         </div>
 

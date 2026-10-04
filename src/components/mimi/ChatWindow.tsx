@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
-import { PENDING_MESSAGE_KEY, PENDING_VOICE_KEY, threadsQueryKey } from "@/lib/threads";
+import { PENDING_MESSAGE_KEY, PENDING_VOICE_KEY, takePendingChatDraft, threadsQueryKey } from "@/lib/threads";
 import { VoicePanel, type VoiceTurn } from "./VoicePanel";
 import { Composer, type ComposerHandle } from "./Composer";
 import { MessageList } from "./MessageList";
@@ -54,10 +54,11 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
     if (sentPending.current) return;
     const pending = sessionStorage.getItem(PENDING_MESSAGE_KEY);
     if (!pending) return;
+    const draft = takePendingChatDraft();
     sentPending.current = true;
     const timer = setTimeout(() => {
       sessionStorage.removeItem(PENDING_MESSAGE_KEY);
-      composerRef.current?.fillAndSubmit(pending);
+      composerRef.current?.fillAndSubmit(draft?.text ?? pending, draft?.files, draft?.webSearch);
     }, 800);
     return () => clearTimeout(timer);
   }, [sendMessage]);
