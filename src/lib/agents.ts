@@ -32,5 +32,6 @@ export function setActiveAgent(id: AgentId) {
 }
 
 export function agentName(id: string): string {
+  if (id === "cuenta") return "la cuenta de Mimi";
   return AGENTS.find((a) => a.id === id)?.name ?? "Mimi";
 }
