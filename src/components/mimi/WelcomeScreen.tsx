@@ -1,0 +1,106 @@
+import { useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { BarChart3, BookOpen, Lightbulb, PenLine, Sparkles } from "lucide-react";
+import { toast } from "sonner";
+
+import { AboutMimiModal } from "./AboutMimiModal";
+import { Composer } from "./Composer";
+import { createThread, PENDING_MESSAGE_KEY } from "@/lib/threads";
+import { MIMI_SUGGESTIONS } from "@/lib/mimi";
+import mimiHero from "@/assets/mimi-hero.png.asset.json";
+
+const suggestionIcons = [BookOpen, Lightbulb, BarChart3, PenLine];
+
+export function WelcomeScreen({ userId }: { userId: string }) {
+  const navigate = useNavigate();
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const startChat = async (text: string) => {
+    if (busy) return;
+    setBusy(true);
+    const { data, error } = await createThread(userId);
+    if (error || !data) {
+      setBusy(false);
+      toast.error("No se pudo crear el chat. Inténtalo de nuevo.");
+      return;
+    }
+    sessionStorage.setItem(PENDING_MESSAGE_KEY, text);
+    navigate({ to: "/chat/$threadId", params: { threadId: data.id } });
+  };
+
+  return (
+    <div className="relative flex min-h-full flex-1 flex-col overflow-y-auto">
+      {/* Watermark */}
+      <span
+        aria-hidden
+        className="watermark-ivad pointer-events-none absolute inset-0 flex items-center justify-center select-none"
+      >
+        IVAD
+      </span>
+
+      {/* Mimi hero, top right, unboxed */}
+      <img
+        src={mimiHero.url}
+        alt="Mimi, asistente de IVAD"
+        className="pointer-events-none absolute right-6 top-6 hidden w-64 select-none object-contain md:block lg:w-80"
+      />
+
+      <div className="relative mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center gap-5 px-4 py-14">
+        <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
+          Hola, soy <span className="font-script text-6xl text-primary sm:text-7xl">Mimi</span>{" "}
+          <span className="text-primary">✦</span>
+        </h1>
+        <p className="text-xl font-medium text-foreground">Tu asistente inteligente de IVAD</p>
+        <p className="max-w-xl border-l-2 border-primary pl-4 text-muted-foreground">
+          Estoy aquí para ayudarte con información, respuestas, redacción, análisis y mucho más.
+          ¿En qué puedo asistirte hoy?
+        </p>
+
+        <div>
+          <button
+            type="button"
+            onClick={() => setAboutOpen(true)}
+            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            <Sparkles className="h-4 w-4" />
+            Conocer más sobre mí
+          </button>
+        </div>
+
+        <Composer onSend={startChat} disabled={busy} large autoFocus />
+
+        <p className="text-center text-xs text-muted-foreground">
+          Mimi puede cometer errores. Verifica la información importante.
+        </p>
+
+        <div>
+          <p className="mb-3 text-sm font-semibold">Sugerencias para ti</p>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {MIMI_SUGGESTIONS.map((s, i) => {
+              const Icon = suggestionIcons[i % suggestionIcons.length] ?? BookOpen;
+              return (
+                <button
+                  key={s.title}
+                  type="button"
+                  disabled={busy}
+                  onClick={() => startChat(s.prompt)}
+                  className="rounded-2xl border border-border bg-card p-4 text-left transition-colors hover:border-primary/50 hover:bg-accent disabled:opacity-50"
+                >
+                  <Icon className="mb-3 h-5 w-5 text-foreground" />
+                  <span className="text-sm text-muted-foreground">{s.title}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      <footer className="relative pb-4 text-center text-xs text-muted-foreground">
+        Mimi IA de IVAD Home & Goods. Todos los derechos reservados.
+      </footer>
+
+      <AboutMimiModal open={aboutOpen} onOpenChange={setAboutOpen} />
+    </div>
+  );
+}
