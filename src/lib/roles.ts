@@ -33,3 +33,17 @@ export async function fetchMyPendingRequest(userId: string): Promise<boolean> {
   if (error) return false;
   return (data ?? []).length > 0;
 }
+
+export type PrivateAgent = "contadora" | "logistica" | "ejecutiva" | "milt";
+export const PRIVATE_AGENTS: PrivateAgent[] = ["contadora", "logistica", "ejecutiva", "milt"];
+export const myAgentAccessKey = ["my-agent-access"];
+
+/** Agents the signed-in user may use ("mimi" is always open; admins get all). */
+export async function fetchMyAgentAccess(): Promise<string[]> {
+  const { data: u } = await supabase.auth.getUser();
+  if (!u.user) return ["mimi"];
+  const roles = await fetchMyRoles(u.user.id);
+  if (roles.includes("administrador")) return ["mimi", ...PRIVATE_AGENTS];
+  const { data } = await supabase.from("agent_access").select("agent").eq("user_id", u.user.id);
+  return ["mimi", ...(data ?? []).map((r) => r.agent)];
+}

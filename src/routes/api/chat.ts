@@ -131,6 +131,15 @@ export const Route = createFileRoute("/api/chat")({
               .join("\n\n")}`
           : "";
         const agent = body.agent ?? "mimi";
+        if (agent !== "mimi") {
+          const { data: allowed } = await supabase.rpc("has_agent_access", {
+            _user_id: userData.user.id,
+            _agent: agent,
+          });
+          if (!allowed) {
+            return new Response("Esta Mimi es privada. Solicita acceso a un administrador.", { status: 403 });
+          }
+        }
         let agentBlock = "";
         if (agent === "contadora" || agent === "logistica" || agent === "ejecutiva") {
           agentBlock = `\n\n## Tu versión activa\n${SPECIALISTS[agent]}\nSi la tarea también necesita a otra especialista, consúltala con la herramienta consultar_agente.`;
