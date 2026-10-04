@@ -80,7 +80,7 @@ export const Route = createFileRoute("/api/chat")({
               console.error("No se pudo guardar el mensaje del usuario:", insertError);
             }
             if (thread.title === "Nuevo chat") {
-              const title = messageText(lastUser).slice(0, 48) || "Nuevo chat";
+              const title = await generateChatTitle(messageText(lastUser));
               await supabase.from("threads").update({ title, updated_at: new Date().toISOString() }).eq("id", threadId);
             } else {
               await supabase.from("threads").update({ updated_at: new Date().toISOString() }).eq("id", threadId);
