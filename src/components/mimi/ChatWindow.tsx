@@ -10,6 +10,7 @@ import { VoicePanel, type VoiceTurn } from "./VoicePanel";
 import { Composer, type ComposerHandle } from "./Composer";
 import { MessageList } from "./MessageList";
 import { extractOfficeText } from "@/lib/office";
+import { getActiveAgent } from "@/lib/agents";
 
 interface ChatWindowProps {
   threadId: string;
