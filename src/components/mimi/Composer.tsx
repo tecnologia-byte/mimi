@@ -1,5 +1,5 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { Globe, Mic, Plus, SendHorizontal, Square } from "lucide-react";
+import { ArrowUp, Globe, Mic, Plus, Square } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -95,7 +95,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
             disabled={!value.trim()}
             aria-label="Enviar mensaje"
           >
-            <SendHorizontal className="h-4 w-4" />
+            <ArrowUp className="h-4 w-4" />
           </Button>
         )}
       </div>

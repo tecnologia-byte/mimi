@@ -52,7 +52,7 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
       // Route through the composer's real send button; calling sendMessage
       // directly from this effect never fires the request.
       composerRef.current?.fillAndSubmit(pending);
-    }, 300);
+    }, 2500);
     return () => clearTimeout(timer);
   }, [sendMessage]);
 
