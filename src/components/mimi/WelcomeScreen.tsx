@@ -66,7 +66,7 @@ export function WelcomeScreen({ userId }: { userId: string }) {
             <img
               src={mimiHero}
               alt="Mimi, asistente de IVAD"
-              className="pointer-events-none -mb-6 block h-40 w-auto select-none sm:-mb-8 sm:h-52 lg:-mb-10 lg:h-60"
+              className="pointer-events-none -mb-1 block h-40 w-auto select-none sm:-mb-1.5 sm:h-52 lg:-mb-2 lg:h-60"
             />
           </div>
           <div className="relative">
