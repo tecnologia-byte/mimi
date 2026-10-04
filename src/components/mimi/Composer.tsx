@@ -34,7 +34,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
 
   // Modelos de Mimi disponibles. Por ahora solo Mimi Flash 1.5.
   const MIMI_MODELS = [{ id: "mimi-flash-1.5", name: "Mimi Flash 1.5", tag: "Rápido" }];
-  const activeModel = MIMI_MODELS[0];
+  const activeModel = MIMI_MODELS[0]!;
 
   useImperativeHandle(ref, () => ({
     focus: () => textareaRef.current?.focus(),
