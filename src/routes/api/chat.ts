@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
-import { convertToModelMessages, type UIMessage } from "ai";
+import { createOpenAI } from "@ai-sdk/openai";
+import { convertToModelMessages, generateText, type UIMessage } from "ai";
 
 import { createResponsesCall } from "@/lib/ai/responses";
 import { MIMI_SYSTEM_PROMPT } from "@/lib/mimi";
