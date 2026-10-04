@@ -92,12 +92,17 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
     if (pending === null) return;
 
     const draft = takePendingChatDraft();
-    sentPending.current = true;
-    sessionStorage.removeItem(PENDING_MESSAGE_KEY);
-    void handleSend(
-      draft?.text ?? pending,
-      { webSearch: draft?.webSearch ?? false, files: draft?.files ?? [] },
-    );
+    const timer = window.setTimeout(() => {
+      if (sentPending.current) return;
+      sentPending.current = true;
+      sessionStorage.removeItem(PENDING_MESSAGE_KEY);
+      void handleSend(
+        draft?.text ?? pending,
+        { webSearch: draft?.webSearch ?? false, files: draft?.files ?? [] },
+      );
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [handleSend]);
 
   const [voiceOpen, setVoiceOpen] = useState(false);
