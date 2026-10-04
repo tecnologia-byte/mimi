@@ -19,14 +19,14 @@ export function WelcomeScreen({ userId }: { userId: string }) {
   const startChat = async (text: string) => {
     if (busy) return;
     setBusy(true);
-    const { data, error } = await createThread(userId);
-    if (error || !data) {
+    try {
+      const thread = await createThread(userId);
+      sessionStorage.setItem(PENDING_MESSAGE_KEY, text);
+      navigate({ to: "/chat/$threadId", params: { threadId: thread.id } });
+    } catch {
       setBusy(false);
       toast.error("No se pudo crear el chat. Inténtalo de nuevo.");
-      return;
     }
-    sessionStorage.setItem(PENDING_MESSAGE_KEY, text);
-    navigate({ to: "/chat/$threadId", params: { threadId: data.id } });
   };
 
   return (
@@ -46,9 +46,9 @@ export function WelcomeScreen({ userId }: { userId: string }) {
         className="pointer-events-none absolute right-6 top-6 hidden w-64 select-none object-contain md:block lg:w-80"
       />
 
-      <div className="relative mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center gap-5 px-4 py-14">
-        <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-          Hola, soy <span className="font-script text-6xl text-primary sm:text-7xl">Mimi</span>{" "}
+      <div className="relative mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center gap-4 px-4 py-6 sm:gap-5 sm:py-14">
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-5xl">
+          Hola, soy <span className="font-script text-5xl text-primary sm:text-7xl">Mimi</span>{" "}
           <span className="text-primary">✦</span>
         </h1>
         <p className="text-xl font-medium text-foreground">Tu asistente inteligente de IVAD</p>
@@ -68,7 +68,7 @@ export function WelcomeScreen({ userId }: { userId: string }) {
           </button>
         </div>
 
-        <Composer onSend={startChat} disabled={busy} large autoFocus />
+        <Composer onSend={startChat} busy={busy} large />
 
         <p className="text-center text-xs text-muted-foreground">
           Mimi puede cometer errores. Verifica la información importante.
