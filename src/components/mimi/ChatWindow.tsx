@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
-import { PENDING_MESSAGE_KEY } from "@/lib/threads";
+import { PENDING_MESSAGE_KEY, PENDING_VOICE_KEY } from "@/lib/threads";
+import { VoicePanel, type VoiceTurn } from "./VoicePanel";
 import { Composer, type ComposerHandle } from "./Composer";
 import { MessageList } from "./MessageList";
 
@@ -30,7 +31,7 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
     [threadId],
   );
 
-  const { messages, sendMessage, regenerate, status, stop } = useChat({
+  const { messages, sendMessage, regenerate, status, stop, setMessages } = useChat({
     id: threadId,
     messages: initialMessages,
     transport,
@@ -56,6 +57,52 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
     return () => clearTimeout(timer);
   }, [sendMessage]);
 
+  const [voiceOpen, setVoiceOpen] = useState(false);
+  useEffect(() => {
+    if (sessionStorage.getItem(PENDING_VOICE_KEY)) {
+      sessionStorage.removeItem(PENDING_VOICE_KEY);
+      setVoiceOpen(true);
+    }
+  }, []);
+
+  // Show spoken captions live in the transcript.
+  const onTurnUpdate = useCallback(
+    (turn: VoiceTurn) => {
+      setMessages((prev) => {
+        const msg: UIMessage = { id: turn.id, role: turn.role, parts: [{ type: "text", text: turn.text }] };
+        const i = prev.findIndex((m) => m.id === turn.id);
+        if (i === -1) return [...prev, msg];
+        const next = prev.slice();
+        next[i] = msg;
+        return next;
+      });
+    },
+    [setMessages],
+  );
+
+  // Save each finished spoken turn to this chat's history.
+  const onTurnComplete = useCallback(
+    async (turn: VoiceTurn) => {
+      onTurnUpdate(turn);
+      const { error } = await supabase.from("messages").insert({
+        thread_id: threadId,
+        role: turn.role,
+        content: turn.text,
+        parts: [{ type: "text", text: turn.text }],
+        sdk_id: turn.id,
+      });
+      if (error) toast.error("No se pudo guardar parte de la conversación de voz.");
+      if (turn.role === "user") {
+        await supabase
+          .from("threads")
+          .update({ title: turn.text.slice(0, 60), updated_at: new Date().toISOString() })
+          .eq("id", threadId)
+          .eq("title", "Nuevo chat");
+      }
+    },
+    [onTurnUpdate, threadId],
+  );
+
   const busy = status === "submitted" || status === "streaming";
   const waiting =
     status === "submitted" || (status === "streaming" && messages[messages.length - 1]?.role === "user");
@@ -68,7 +115,15 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
     <>
       <MessageList messages={messages} busy={waiting} onRegenerate={() => regenerate()} />
       <div className="mx-auto w-full max-w-3xl shrink-0 px-4 pb-4">
+        {voiceOpen && (
+          <VoicePanel
+            onTurnUpdate={onTurnUpdate}
+            onTurnComplete={onTurnComplete}
+            onClose={() => setVoiceOpen(false)}
+          />
+        )}
         <Composer
+          onVoice={() => setVoiceOpen(true)}
           ref={composerRef}
           busy={busy}
           onStop={stop}

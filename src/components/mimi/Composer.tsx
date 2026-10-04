@@ -15,10 +15,11 @@ interface ComposerProps {
   busy?: boolean;
   large?: boolean;
   placeholder?: string;
+  onVoice?: () => void;
 }
 
 export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Composer(
-  { onSend, onStop, busy, large, placeholder = "Escribe tu mensaje a Mimi..." },
+  { onSend, onStop, busy, large, placeholder = "Escribe tu mensaje a Mimi...", onVoice },
   ref,
 ) {
   const [value, setValue] = useState("");
@@ -78,7 +79,15 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
         >
           <Globe className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="icon" className="rounded-full" aria-label="Dictado por voz" title="Dictado por voz (próximamente)">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-full"
+          aria-label="Hablar con Mimi"
+          title="Hablar con Mimi por voz"
+          onClick={onVoice}
+          disabled={!onVoice}
+        >
           <Mic className="h-4 w-4" />
         </Button>
         <div className="flex-1" />

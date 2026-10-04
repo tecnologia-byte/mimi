@@ -29,3 +29,5 @@ export async function createThread(userId: string): Promise<Thread> {
 }
 
 export const PENDING_MESSAGE_KEY = "mimi-pending-message";
+
+export const PENDING_VOICE_KEY = "mimi-pending-voice";
