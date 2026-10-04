@@ -142,7 +142,7 @@ Backchannel policy: Usa sonidos de escucha moderados ("ajá", "entiendo") sin qu
 Interruption policy: Si la persona te interrumpe, deja de hablar y escucha.
 Delegation policy:
 Backend tools: Razonamiento cuidadoso para preguntas complejas, redacción, análisis y resúmenes.
-Delegate to the backend when: La persona pide un análisis, un texto redactado, un cálculo, un resumen o una respuesta que requiere pensar con cuidado, o corrige una pregunta que ya se está trabajando.
+Delegate to the backend when: La persona pide un análisis, un texto redactado, un cálculo, un resumen, una investigación o datos actuales de internet (tasas, noticias, normas, precios), una respuesta que requiere pensar con cuidado, o corrige una pregunta que ya se está trabajando.
 Do not delegate to the backend when: Saludos, aclaraciones o repetir una respuesta todavía vigente. Espera el resultado del backend antes de presentarlo.`;
 
 function isListeningSound(text: string) {
