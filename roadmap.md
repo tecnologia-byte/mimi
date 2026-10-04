@@ -16,8 +16,8 @@
 - [x] Documentos: subir, guardar privados y analizar PDF/imágenes/texto en el chat (DOCX/XLSX se guardan, análisis pendiente)
 
 ## Siguientes pasos del brief
-- [ ] Conocimientos (RAG con pgvector y citas)
+- [x] Conocimientos (base compartida usada y citada en el chat)
 - [ ] Documentos (subida PDF/DOCX/XLSX/imágenes)
 - [ ] Panel de administración (roles, auditoría)
-- [ ] Favoritos, Plantillas, Herramientas (hoy son placeholders)
+- [x] Favoritos, Plantillas, Herramientas
 - [ ] Acciones de mensaje: exportar PDF/Word, regenerar con persistencia

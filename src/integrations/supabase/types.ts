@@ -44,6 +44,68 @@ export type Database = {
         }
         Relationships: []
       }
+      favorites: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          thread_id: string | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          thread_id?: string | null
+          user_id?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          thread_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorites_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      knowledge_entries: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          created_by: string
+          id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          content: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string

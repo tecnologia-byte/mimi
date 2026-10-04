@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { exportExcel, exportWord } from "@/lib/office";
+import { supabase } from "@/integrations/supabase/client";
 import mimiAvatar from "@/assets/mimi-avatar.png.asset.json";
 
 function messageText(message: UIMessage): string {
@@ -32,6 +33,13 @@ export function MessageList({ messages, busy, onRegenerate }: MessageListProps) 
   const copy = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success("Copiado al portapapeles");
+  };
+
+  const saveFavorite = async (text: string) => {
+    const threadId = window.location.pathname.match(/\/chat\/([\w-]+)/)?.[1] ?? null;
+    const { error } = await supabase.from("favorites").insert({ content: text, thread_id: threadId });
+    if (error) toast.error("No se pudo guardar en Favoritos");
+    else toast.success("Guardado en Favoritos");
   };
 
   const lastAssistantId = [...messages].reverse().find((m) => m.role === "assistant")?.id;
@@ -126,7 +134,7 @@ export function MessageList({ messages, busy, onRegenerate }: MessageListProps) 
                   <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="No útil">
                     <ThumbsDown className="h-3.5 w-3.5" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Guardar en Favoritos" title="Guardar en Favoritos (próximamente)">
+                  <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Guardar en Favoritos" title="Guardar en Favoritos" onClick={() => void saveFavorite(text)}>
                     <Star className="h-3.5 w-3.5" />
                   </Button>
                 </div>

@@ -11,7 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ConocimientosRouteImport } from './routes/conocimientos'
 import { Route as DocumentosRouteImport } from './routes/documentos'
+import { Route as FavoritosRouteImport } from './routes/favoritos'
+import { Route as HerramientasRouteImport } from './routes/herramientas'
+import { Route as PlantillasRouteImport } from './routes/plantillas'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ChatThreadIdRouteImport } from './routes/chat.$threadId'
 
@@ -25,9 +29,29 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConocimientosRoute = ConocimientosRouteImport.update({
+  id: '/conocimientos',
+  path: '/conocimientos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DocumentosRoute = DocumentosRouteImport.update({
   id: '/documentos',
   path: '/documentos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FavoritosRoute = FavoritosRouteImport.update({
+  id: '/favoritos',
+  path: '/favoritos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HerramientasRoute = HerramientasRouteImport.update({
+  id: '/herramientas',
+  path: '/herramientas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlantillasRoute = PlantillasRouteImport.update({
+  id: '/plantillas',
+  path: '/plantillas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
@@ -44,14 +68,22 @@ const ChatThreadIdRoute = ChatThreadIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/conocimientos': typeof ConocimientosRoute
   '/documentos': typeof DocumentosRoute
+  '/favoritos': typeof FavoritosRoute
+  '/herramientas': typeof HerramientasRoute
+  '/plantillas': typeof PlantillasRoute
   '/api/chat': typeof ApiChatRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/conocimientos': typeof ConocimientosRoute
   '/documentos': typeof DocumentosRoute
+  '/favoritos': typeof FavoritosRoute
+  '/herramientas': typeof HerramientasRoute
+  '/plantillas': typeof PlantillasRoute
   '/api/chat': typeof ApiChatRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
 }
@@ -59,23 +91,58 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/conocimientos': typeof ConocimientosRoute
   '/documentos': typeof DocumentosRoute
+  '/favoritos': typeof FavoritosRoute
+  '/herramientas': typeof HerramientasRoute
+  '/plantillas': typeof PlantillasRoute
   '/api/chat': typeof ApiChatRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/documentos' | '/api/chat' | '/chat/$threadId'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/conocimientos'
+    | '/documentos'
+    | '/favoritos'
+    | '/herramientas'
+    | '/plantillas'
+    | '/api/chat'
+    | '/chat/$threadId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/documentos' | '/api/chat' | '/chat/$threadId'
+  to:
+    | '/'
+    | '/auth'
+    | '/conocimientos'
+    | '/documentos'
+    | '/favoritos'
+    | '/herramientas'
+    | '/plantillas'
+    | '/api/chat'
+    | '/chat/$threadId'
   id:
-    '__root__' | '/' | '/auth' | '/documentos' | '/api/chat' | '/chat/$threadId'
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/conocimientos'
+    | '/documentos'
+    | '/favoritos'
+    | '/herramientas'
+    | '/plantillas'
+    | '/api/chat'
+    | '/chat/$threadId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  ConocimientosRoute: typeof ConocimientosRoute
   DocumentosRoute: typeof DocumentosRoute
+  FavoritosRoute: typeof FavoritosRoute
+  HerramientasRoute: typeof HerramientasRoute
+  PlantillasRoute: typeof PlantillasRoute
   ApiChatRoute: typeof ApiChatRoute
   ChatThreadIdRoute: typeof ChatThreadIdRoute
 }
@@ -96,11 +163,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/conocimientos': {
+      id: '/conocimientos'
+      path: '/conocimientos'
+      fullPath: '/conocimientos'
+      preLoaderRoute: typeof ConocimientosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/documentos': {
       id: '/documentos'
       path: '/documentos'
       fullPath: '/documentos'
       preLoaderRoute: typeof DocumentosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/favoritos': {
+      id: '/favoritos'
+      path: '/favoritos'
+      fullPath: '/favoritos'
+      preLoaderRoute: typeof FavoritosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/herramientas': {
+      id: '/herramientas'
+      path: '/herramientas'
+      fullPath: '/herramientas'
+      preLoaderRoute: typeof HerramientasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/plantillas': {
+      id: '/plantillas'
+      path: '/plantillas'
+      fullPath: '/plantillas'
+      preLoaderRoute: typeof PlantillasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/chat': {
@@ -123,7 +218,11 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  ConocimientosRoute: ConocimientosRoute,
   DocumentosRoute: DocumentosRoute,
+  FavoritosRoute: FavoritosRoute,
+  HerramientasRoute: HerramientasRoute,
+  PlantillasRoute: PlantillasRoute,
   ApiChatRoute: ApiChatRoute,
   ChatThreadIdRoute: ChatThreadIdRoute,
 }

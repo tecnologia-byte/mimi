@@ -93,9 +93,19 @@ export const Route = createFileRoute("/api/chat")({
         }
 
         const modelMessages = await convertToModelMessages(messages);
+        const { data: knowledge } = await supabase
+          .from("knowledge_entries")
+          .select("title, category, content")
+          .order("updated_at", { ascending: false })
+          .limit(40);
+        const knowledgeBlock = knowledge?.length
+          ? `\n\n## Base de Conocimientos de IVAD\nUsa esta información interna cuando sea relevante y cítala como [Conocimiento: título]. Si la respuesta no está aquí, dilo con honestidad.\n\n${knowledge
+              .map((k) => `### ${k.title} (${k.category})\n${k.content.slice(0, 3000)}`)
+              .join("\n\n")}`
+          : "";
         const { result, response } = createResponsesCall(
           request,
-          { baseURL: "https://ai.gateway.lovable.dev/v1", apiKey, model: "openai/gpt-6-astra", system: MIMI_SYSTEM_PROMPT, webSearch: body.webSearch === true },
+          { baseURL: "https://ai.gateway.lovable.dev/v1", apiKey, model: "openai/gpt-6-astra", system: MIMI_SYSTEM_PROMPT + knowledgeBlock, webSearch: body.webSearch === true },
           modelMessages,
         );
 
