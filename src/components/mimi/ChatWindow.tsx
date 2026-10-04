@@ -40,18 +40,18 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
   });
 
   // Send the first message that created this thread (from the welcome screen).
+  // Deferred past mount: sending synchronously during the first commit races
+  // with useChat's internal initialization and the request never fires.
   useEffect(() => {
     if (sentPending.current) return;
     const pending = sessionStorage.getItem(PENDING_MESSAGE_KEY);
-    if (pending) {
-      sentPending.current = true;
+    if (!pending) return;
+    sentPending.current = true;
+    const timer = setTimeout(() => {
       sessionStorage.removeItem(PENDING_MESSAGE_KEY);
-      console.log("[mimi] sending pending, status:", status);
-      sendMessage({ text: pending }).then(
-        () => console.log("[mimi] pending send resolved"),
-        (e) => console.log("[mimi] pending send rejected", e),
-      );
-    }
+      sendMessage({ text: pending });
+    }, 150);
+    return () => clearTimeout(timer);
   }, [sendMessage]);
 
   const busy = status === "submitted" || status === "streaming";
