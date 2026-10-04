@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import type { UIMessage } from "ai";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Copy, FileSpreadsheet, FileText, Paperclip, RefreshCw, Star, ThumbsDown, ThumbsUp, Users } from "lucide-react";
+import { Copy, FileSpreadsheet, FileText, Loader2, Paperclip, RefreshCw, Star, ThumbsDown, ThumbsUp, Users } from "lucide-react";
 import { agentName } from "@/lib/agents";
 import { toast } from "sonner";
 
@@ -86,16 +86,32 @@ export function MessageList({ messages, busy, onRegenerate }: MessageListProps) 
                 if (p.type !== "tool-consultar_agente") return null;
                 const tp = p as { input?: { agente?: string; tarea?: string }; output?: { respuesta?: string }; state?: string };
                 const name = agentName(tp.input?.agente ?? "");
+                const done = Boolean(tp.output);
                 return (
-                  <details key={i} className="mb-2 rounded-xl border border-border bg-accent/40 px-3 py-2 text-xs">
+                  <details key={i} open={!done} className="group mb-2 rounded-xl border border-primary/30 bg-accent/40 px-3 py-2 text-xs">
                     <summary className="flex cursor-pointer items-center gap-2 font-medium text-accent-foreground">
-                      <Users className="h-3.5 w-3.5 text-primary" />
-                      Milt · {tp.output ? `${name} respondió` : `Consultando a ${name}...`}
+                      {done ? (
+                        <Users className="h-3.5 w-3.5 shrink-0 text-primary" />
+                      ) : (
+                        <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-primary" />
+                      )}
+                      {done
+                        ? `${name} respondió · toca para ver qué hizo`
+                        : `Ok, déjame comunicarme con ${name}, un momento…`}
                     </summary>
-                    {tp.input?.tarea && <p className="mt-2 text-muted-foreground"><b>Tarea:</b> {tp.input.tarea}</p>}
-                    {tp.output?.respuesta && (
-                      <div className="mt-2 whitespace-pre-wrap text-foreground">{tp.output.respuesta}</div>
-                    )}
+                    <div className="mt-2 space-y-2 border-t border-border/60 pt-2">
+                      <p className="font-semibold text-primary">{name}</p>
+                      {tp.input?.tarea && (
+                        <p className="text-muted-foreground"><b>Tarea que le di:</b> {tp.input.tarea}</p>
+                      )}
+                      {done ? (
+                        <div className="whitespace-pre-wrap text-foreground">{tp.output?.respuesta}</div>
+                      ) : (
+                        <p className="flex items-center gap-2 text-muted-foreground">
+                          <Loader2 className="h-3 w-3 animate-spin" /> {name} está trabajando en esto…
+                        </p>
+                      )}
+                    </div>
                   </details>
                 );
               })}
