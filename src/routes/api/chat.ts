@@ -6,7 +6,7 @@ import { convertToModelMessages, generateText, type UIMessage } from "ai";
 import { createResponsesCall } from "@/lib/ai/responses";
 import { MIMI_SYSTEM_PROMPT } from "@/lib/mimi";
 import { SPECIALISTS } from "@/lib/agents";
-import { createMiltTools } from "@/lib/milt.server";
+import { createMiltTools } from "@/lib/milt";
 
 function messageText(message: UIMessage): string {
   return message.parts
