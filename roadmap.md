@@ -12,8 +12,8 @@
 
 - [x] Voz en vivo con Mimi (transcripción guardada en el chat)
 - [x] Mimi dice que fue creada por el equipo de Tecnología de IVAD
-- [ ] Búsqueda web con Gemini (datos protegidos, solo se envía la pregunta)
-- [ ] Documentos: subir, guardar (solo visibles para quien los sube) y analizar
+- [x] Búsqueda web (botón globo, fuentes citadas, sin datos internos en búsquedas)
+- [x] Documentos: subir, guardar privados y analizar PDF/imágenes/texto en el chat (DOCX/XLSX se guardan, análisis pendiente)
 
 ## Siguientes pasos del brief
 - [ ] Conocimientos (RAG con pgvector y citas)

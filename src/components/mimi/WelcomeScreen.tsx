@@ -71,7 +71,7 @@ export function WelcomeScreen({ userId }: { userId: string }) {
             />
           </div>
           <div className="relative z-10">
-            <Composer onSend={(t) => startChat(t)} onVoice={() => startChat("", true)} busy={busy} large />
+            <Composer onSend={(t) => startChat(t)} onVoice={() => startChat("", true)} busy={busy} large allowAttach={false} />
           </div>
         </div>
 
