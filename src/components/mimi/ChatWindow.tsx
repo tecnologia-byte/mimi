@@ -49,9 +49,9 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
     sentPending.current = true;
     const timer = setTimeout(() => {
       sessionStorage.removeItem(PENDING_MESSAGE_KEY);
-      // Route through the composer so the send uses the latest onSend closure;
-      // calling the first-render sendMessage from this effect never fires the request.
-      composerRef.current?.submitText(pending);
+      // Route through the composer's real send button; calling sendMessage
+      // directly from this effect never fires the request.
+      composerRef.current?.fillAndSubmit(pending);
     }, 300);
     return () => clearTimeout(timer);
   }, [sendMessage]);

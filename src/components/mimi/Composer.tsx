@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 export interface ComposerHandle {
   focus: () => void;
-  submitText: (text: string) => void;
+  fillAndSubmit: (text: string) => void;
 }
 
 interface ComposerProps {
@@ -24,12 +24,15 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
   const [value, setValue] = useState("");
   const [webSearch, setWebSearch] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const sendBtnRef = useRef<HTMLButtonElement>(null);
 
   useImperativeHandle(ref, () => ({
     focus: () => textareaRef.current?.focus(),
-    submitText: (text: string) => {
-      const trimmed = text.trim();
-      if (trimmed) onSend(trimmed);
+    // Fills the textarea and clicks the real send button so the send goes
+    // through the exact same event path as a manual click.
+    fillAndSubmit: (text: string) => {
+      setValue(text);
+      setTimeout(() => sendBtnRef.current?.click(), 60);
     },
   }));
 
@@ -85,6 +88,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
           </Button>
         ) : (
           <Button
+            ref={sendBtnRef}
             size="icon"
             className="rounded-full"
             onClick={submit}
