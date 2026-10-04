@@ -18,6 +18,7 @@ import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as HerramientasRouteImport } from './routes/herramientas'
 import { Route as MiltRouteImport } from './routes/milt'
 import { Route as PlantillasRouteImport } from './routes/plantillas'
+import { Route as SolicitarAccesoRouteImport } from './routes/solicitar-acceso'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ChatThreadIdRouteImport } from './routes/chat.$threadId'
 
@@ -66,6 +67,11 @@ const PlantillasRoute = PlantillasRouteImport.update({
   path: '/plantillas',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SolicitarAccesoRoute = SolicitarAccesoRouteImport.update({
+  id: '/solicitar-acceso',
+  path: '/solicitar-acceso',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/herramientas': typeof HerramientasRoute
   '/milt': typeof MiltRoute
   '/plantillas': typeof PlantillasRoute
+  '/solicitar-acceso': typeof SolicitarAccesoRoute
   '/api/chat': typeof ApiChatRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
 }
@@ -100,6 +107,7 @@ export interface FileRoutesByTo {
   '/herramientas': typeof HerramientasRoute
   '/milt': typeof MiltRoute
   '/plantillas': typeof PlantillasRoute
+  '/solicitar-acceso': typeof SolicitarAccesoRoute
   '/api/chat': typeof ApiChatRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
 }
@@ -114,6 +122,7 @@ export interface FileRoutesById {
   '/herramientas': typeof HerramientasRoute
   '/milt': typeof MiltRoute
   '/plantillas': typeof PlantillasRoute
+  '/solicitar-acceso': typeof SolicitarAccesoRoute
   '/api/chat': typeof ApiChatRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
 }
@@ -129,6 +138,7 @@ export interface FileRouteTypes {
     | '/herramientas'
     | '/milt'
     | '/plantillas'
+    | '/solicitar-acceso'
     | '/api/chat'
     | '/chat/$threadId'
   fileRoutesByTo: FileRoutesByTo
@@ -142,6 +152,7 @@ export interface FileRouteTypes {
     | '/herramientas'
     | '/milt'
     | '/plantillas'
+    | '/solicitar-acceso'
     | '/api/chat'
     | '/chat/$threadId'
   id:
@@ -155,6 +166,7 @@ export interface FileRouteTypes {
     | '/herramientas'
     | '/milt'
     | '/plantillas'
+    | '/solicitar-acceso'
     | '/api/chat'
     | '/chat/$threadId'
   fileRoutesById: FileRoutesById
@@ -169,6 +181,7 @@ export interface RootRouteChildren {
   HerramientasRoute: typeof HerramientasRoute
   MiltRoute: typeof MiltRoute
   PlantillasRoute: typeof PlantillasRoute
+  SolicitarAccesoRoute: typeof SolicitarAccesoRoute
   ApiChatRoute: typeof ApiChatRoute
   ChatThreadIdRoute: typeof ChatThreadIdRoute
 }
@@ -238,6 +251,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlantillasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/solicitar-acceso': {
+      id: '/solicitar-acceso'
+      path: '/solicitar-acceso'
+      fullPath: '/solicitar-acceso'
+      preLoaderRoute: typeof SolicitarAccesoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -265,6 +285,7 @@ const rootRouteChildren: RootRouteChildren = {
   HerramientasRoute: HerramientasRoute,
   MiltRoute: MiltRoute,
   PlantillasRoute: PlantillasRoute,
+  SolicitarAccesoRoute: SolicitarAccesoRoute,
   ApiChatRoute: ApiChatRoute,
   ChatThreadIdRoute: ChatThreadIdRoute,
 }
