@@ -62,14 +62,14 @@ export function WelcomeScreen({ userId }: { userId: string }) {
         </div>
 
         <div className="mt-2 flex min-w-0 flex-col">
-          <div className="flex justify-end pr-4 sm:pr-8">
+          <div className="relative z-10 flex justify-end pr-3 sm:pr-6">
             <img
               src={mimiHero}
               alt="Mimi, asistente de IVAD"
-              className="pointer-events-none block h-48 w-auto select-none sm:h-56 lg:h-60"
+              className="pointer-events-none -mb-6 block h-40 w-auto select-none sm:-mb-8 sm:h-52 lg:-mb-10 lg:h-60"
             />
           </div>
-          <div className="relative z-10">
+          <div className="relative">
             <Composer onSend={startChat} busy={busy} large />
           </div>
         </div>
@@ -79,8 +79,8 @@ export function WelcomeScreen({ userId }: { userId: string }) {
         </p>
 
         <div>
-          <p className="mb-3 text-sm font-semibold">Sugerencias para ti</p>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <p className="mb-2 text-sm font-semibold">Sugerencias para ti</p>
+          <div className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3">
             {MIMI_SUGGESTIONS.map((s, i) => {
               const Icon = suggestionIcons[i % suggestionIcons.length] ?? BookOpen;
               return (
@@ -89,10 +89,10 @@ export function WelcomeScreen({ userId }: { userId: string }) {
                   type="button"
                   disabled={busy}
                   onClick={() => startChat(s.prompt)}
-                  className="rounded-2xl border border-border bg-card p-4 text-left transition-colors hover:border-primary/50 hover:bg-accent disabled:opacity-50"
+                  className="flex items-center gap-2 rounded-xl border border-border bg-card p-2.5 text-left transition-colors hover:border-primary/50 hover:bg-accent disabled:opacity-50 sm:gap-2.5 sm:p-3"
                 >
-                  <Icon className="mb-3 h-5 w-5 text-foreground" />
-                  <span className="text-sm text-muted-foreground">{s.title}</span>
+                  <Icon className="h-4 w-4 shrink-0 text-foreground" />
+                  <span className="line-clamp-2 text-xs text-muted-foreground sm:text-sm">{s.title}</span>
                 </button>
               );
             })}
