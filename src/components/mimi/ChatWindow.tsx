@@ -148,7 +148,16 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
 
   return (
     <>
-      <MessageList messages={messages} busy={waiting} onRegenerate={() => regenerate()} />
+      {messages.length === 0 && !busy ? (
+        <div className="flex flex-1 flex-col items-center justify-center gap-2 px-6 text-center">
+          <p className="font-script text-4xl text-primary">Mimi ✦</p>
+          <p className="text-sm text-muted-foreground">
+            Hola, soy Mimi. Escríbeme tu pregunta abajo y te ayudo enseguida.
+          </p>
+        </div>
+      ) : (
+        <MessageList messages={messages} busy={waiting} onRegenerate={() => regenerate()} />
+      )}
       <div className="mx-auto w-full max-w-3xl shrink-0 px-4 pb-4">
         {voiceOpen && (
           <VoicePanel
