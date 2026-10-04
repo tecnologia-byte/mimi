@@ -9,7 +9,7 @@ import {
 
 export function createResponsesCall(
   request: Request,
-  config: { baseURL: string; apiKey: string; model: string; system?: string },
+  config: { baseURL: string; apiKey: string; model: string; system?: string; webSearch?: boolean },
   messages: ModelMessage[],
 ) {
   const runIdFetch = createLovableAiGatewayRunIdFetch(getLovableAiGatewayRunId(request));
@@ -24,6 +24,14 @@ export function createResponsesCall(
     model: provider.responses(config.model),
     messages,
     ...(config.system ? { system: config.system } : {}),
+    ...(config.webSearch
+      ? {
+          tools: { web_search: provider.tools.webSearch({}) },
+          system:
+            (config.system ?? "") +
+            "\n\nBúsqueda web activada: busca en internet solo con términos generales de la pregunta. Nunca incluyas en las búsquedas datos internos, nombres de clientes, cifras ni contenido de documentos de IVAD. Cita las fuentes con enlaces.",
+        }
+      : {}),
     abortSignal: request.signal,
     providerOptions: {
       openai: {

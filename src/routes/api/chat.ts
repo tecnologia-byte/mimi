@@ -33,7 +33,7 @@ export const Route = createFileRoute("/api/chat")({
           return new Response(JSON.stringify({ error: "Sesión inválida" }), { status: 401 });
         }
 
-        let body: { messages?: UIMessage[]; threadId?: string };
+        let body: { messages?: UIMessage[]; threadId?: string; webSearch?: boolean };
         try {
           body = await request.json();
         } catch {
@@ -69,7 +69,10 @@ export const Route = createFileRoute("/api/chat")({
               thread_id: threadId,
               role: "user",
               content: messageText(lastUser),
-              parts: lastUser.parts as unknown as Record<string, unknown>[],
+              // Keep only file names in history; file contents stay in private storage.
+              parts: lastUser.parts.map((p) =>
+                p.type === "file" ? { type: "text", text: `📎 ${p.filename ?? "archivo"}` } : p,
+              ) as unknown as Record<string, unknown>[],
               sdk_id: lastUser.id,
             });
             if (insertError) {
@@ -92,13 +95,14 @@ export const Route = createFileRoute("/api/chat")({
         const modelMessages = await convertToModelMessages(messages);
         const { result, response } = createResponsesCall(
           request,
-          { baseURL: "https://ai.gateway.lovable.dev/v1", apiKey, model: "openai/gpt-6-astra", system: MIMI_SYSTEM_PROMPT },
+          { baseURL: "https://ai.gateway.lovable.dev/v1", apiKey, model: "openai/gpt-6-astra", system: MIMI_SYSTEM_PROMPT, webSearch: body.webSearch === true },
           modelMessages,
         );
 
         const streamResponse = result.toUIMessageStreamResponse({
           originalMessages: messages,
           sendReasoning: false,
+          sendSources: true,
           onFinish: async ({ responseMessage }) => {
             const { error } = await supabase.from("messages").insert({
               thread_id: threadId,

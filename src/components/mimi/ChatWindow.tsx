@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport, type UIMessage } from "ai";
+import { DefaultChatTransport, type FileUIPart, type UIMessage } from "ai";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -56,6 +56,41 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
     }, 2500);
     return () => clearTimeout(timer);
   }, [sendMessage]);
+
+  const handleSend = useCallback(
+    async (text: string, opts: { webSearch: boolean; files: File[] }) => {
+      let fullText = text;
+      const fileParts: FileUIPart[] = [];
+      if (opts.files.length) {
+        const { data: u } = await supabase.auth.getUser();
+        const uid = u.user?.id;
+        for (const file of opts.files) {
+          // Save a private copy in the user's Documents.
+          if (uid) {
+            const path = `${uid}/${crypto.randomUUID()}-${file.name.replace(/[^\w.\-]+/g, "_")}`;
+            const { error } = await supabase.storage.from("documents").upload(path, file, { contentType: file.type });
+            if (!error) {
+              await supabase.from("documents").insert({
+                user_id: uid,
+                name: file.name,
+                mime_type: file.type || "application/octet-stream",
+                size: file.size,
+                storage_path: path,
+              });
+            } else toast.error(`No se pudo guardar ${file.name}`);
+          }
+          if (file.type === "application/pdf" || file.type.startsWith("image/")) {
+            fileParts.push({ type: "file", mediaType: file.type, filename: file.name, url: await toDataURL(file) });
+          } else {
+            const content = (await file.text()).slice(0, 60000);
+            fullText += `\n\n--- Documento: ${file.name} ---\n${content}`;
+          }
+        }
+      }
+      sendMessage({ text: fullText, files: fileParts }, { body: { webSearch: opts.webSearch } });
+    },
+    [sendMessage],
+  );
 
   const [voiceOpen, setVoiceOpen] = useState(false);
   useEffect(() => {
@@ -127,7 +162,7 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
           ref={composerRef}
           busy={busy}
           onStop={stop}
-          onSend={(text) => sendMessage({ text })}
+          onSend={handleSend}
         />
         <p className="mt-2 text-center text-xs text-muted-foreground">
           Mimi puede cometer errores. Verifica la información importante.
@@ -135,4 +170,13 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
       </div>
     </>
   );
+}
+
+function toDataURL(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result));
+    r.onerror = () => reject(r.error);
+    r.readAsDataURL(file);
+  });
 }
