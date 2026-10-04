@@ -1,5 +1,5 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { ArrowUp, Globe, Mic, Paperclip, Plus, Square, X } from "lucide-react";
+import { ArrowUp, Check, ChevronDown, Globe, Mic, Paperclip, Plus, Sparkles, Square, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -30,6 +30,11 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<File[]>([]);
+  const [modelMenuOpen, setModelMenuOpen] = useState(false);
+
+  // Modelos de Mimi disponibles. Por ahora solo Mimi Flash 1.5.
+  const MIMI_MODELS = [{ id: "mimi-flash-1.5", name: "Mimi Flash 1.5", tag: "Rápido" }];
+  const activeModel = MIMI_MODELS[0]!;
 
   useImperativeHandle(ref, () => ({
     focus: () => textareaRef.current?.focus(),
@@ -98,6 +103,44 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
         className="w-full resize-none bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
       />
       <div className="mt-2 flex items-center gap-1">
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setModelMenuOpen((o) => !o)}
+            className="flex items-center gap-1 rounded-full bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground transition-colors hover:bg-accent/80"
+            aria-label="Elegir modelo de Mimi"
+            title="Elegir modelo de Mimi"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-primary" />
+            {activeModel.name}
+            <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", modelMenuOpen && "rotate-180")} />
+          </button>
+          {modelMenuOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setModelMenuOpen(false)} />
+              <div className="absolute bottom-full left-0 z-50 mb-2 w-56 rounded-2xl border border-border bg-popover p-1.5 shadow-xl">
+                <p className="px-2.5 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  Modelos de Mimi
+                </p>
+                {MIMI_MODELS.map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => setModelMenuOpen(false)}
+                    className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left text-sm text-popover-foreground hover:bg-accent"
+                  >
+                    <Sparkles className="h-4 w-4 shrink-0 text-primary" />
+                    <span className="flex-1">
+                      <span className="block font-medium">{m.name}</span>
+                      <span className="block text-xs text-muted-foreground">{m.tag}</span>
+                    </span>
+                    {m.id === activeModel.id && <Check className="h-4 w-4 text-primary" />}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
         <Button
           variant="ghost"
           size="icon"
