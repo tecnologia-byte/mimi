@@ -8,7 +8,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import mimiAvatar from "@/assets/mimi-avatar.png.asset.json";
+import ivadLogo from "@/assets/ivad-logo.png.asset.json";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -74,9 +74,9 @@ function AuthPage() {
       <div className="relative z-10 w-full max-w-md rounded-3xl border border-border bg-card/80 p-6 sm:p-8 shadow-2xl backdrop-blur">
         <div className="mb-6 flex flex-col items-center text-center">
           <img
-            src={mimiAvatar.url}
-            alt="Mimi, asistente de IVAD"
-            className="h-24 w-24 rounded-full border border-border object-cover object-top"
+            src={ivadLogo.url}
+            alt="IVAD Home & Goods"
+            className="h-24 w-24 rounded-full object-cover"
           />
           <h1 className="mt-4 text-4xl text-foreground">
             <span className="font-script">Mimi</span> <span className="text-primary">✦</span>
