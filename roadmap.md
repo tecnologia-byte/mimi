@@ -5,8 +5,8 @@
 - [ ] Revisar imagen de estilo enviada por el usuario (user-uploads://image.png) y aplicar ese estilo visual
 
 ## Pedidos nuevos del usuario
-- [ ] Registrarse/iniciar sesión con Google (configure_social_auth + botón en /auth)
-- [ ] Adaptar la interfaz a móvil (sidebar colapsable, bienvenida, composer)
+- [x] Registrarse/iniciar sesión con Google (configure_social_auth + botón en /auth)
+- [x] Adaptar la interfaz a móvil (sidebar colapsable, bienvenida, composer)
 
 ## Siguientes pasos del brief
 - [ ] Conocimientos (RAG con pgvector y citas)
