@@ -2,7 +2,7 @@
 
 ## En curso
 - [ ] Corregir auto-envío del primer mensaje (funciona con clic real tras ~4s; falla si se dispara demasiado pronto tras montar)
-- [ ] Revisar imagen de estilo enviada por el usuario (user-uploads://image.png) y aplicar ese estilo visual
+- [x] Revisar imagen de estilo enviada y acercar a Mimi al cuadro de mensaje
 
 ## Pedidos nuevos del usuario
 - [x] Registrarse/iniciar sesión con Google (configure_social_auth + botón en /auth)

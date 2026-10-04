@@ -76,12 +76,12 @@ export function MimiSidebar({ user }: { user: User }) {
   const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const accountName =
-    (typeof user.user_metadata.full_name === "string" && user.user_metadata.full_name) ||
-    (typeof user.user_metadata.name === "string" && user.user_metadata.name) ||
+    (typeof user.user_metadata["full_name"] === "string" && user.user_metadata["full_name"]) ||
+    (typeof user.user_metadata["name"] === "string" && user.user_metadata["name"]) ||
     "Usuario IVAD";
   const accountAvatar =
-    (typeof user.user_metadata.avatar_url === "string" && user.user_metadata.avatar_url) ||
-    (typeof user.user_metadata.picture === "string" && user.user_metadata.picture) ||
+    (typeof user.user_metadata["avatar_url"] === "string" && user.user_metadata["avatar_url"]) ||
+    (typeof user.user_metadata["picture"] === "string" && user.user_metadata["picture"]) ||
     null;
   const accountInitial = accountName.trim().charAt(0).toUpperCase() || "U";
 
