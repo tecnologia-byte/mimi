@@ -73,7 +73,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
         type="file"
         multiple
         hidden
-        accept=".pdf,.txt,.md,.csv,.json,image/*"
+        accept=".pdf,.docx,.xlsx,.xls,.txt,.md,.csv,.json,image/*"
         onChange={(e) => {
           const picked = Array.from(e.target.files ?? []).filter((f) => f.size <= 20 * 1024 * 1024);
           setFiles((prev) => [...prev, ...picked].slice(0, 5));
@@ -100,7 +100,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
           size="icon"
           className="rounded-full"
           aria-label="Adjuntar archivo"
-          title={allowAttach ? "Adjuntar PDF, imagen o texto" : "Abre un chat para adjuntar archivos"}
+          title={allowAttach ? "Adjuntar PDF, Word, Excel, imagen o texto" : "Abre un chat para adjuntar archivos"}
           disabled={!allowAttach}
           onClick={() => fileRef.current?.click()}
         >

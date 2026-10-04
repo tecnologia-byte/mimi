@@ -8,6 +8,7 @@ import { PENDING_MESSAGE_KEY, PENDING_VOICE_KEY } from "@/lib/threads";
 import { VoicePanel, type VoiceTurn } from "./VoicePanel";
 import { Composer, type ComposerHandle } from "./Composer";
 import { MessageList } from "./MessageList";
+import { extractOfficeText } from "@/lib/office";
 
 interface ChatWindowProps {
   threadId: string;
@@ -82,7 +83,8 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
           if (file.type === "application/pdf" || file.type.startsWith("image/")) {
             fileParts.push({ type: "file", mediaType: file.type, filename: file.name, url: await toDataURL(file) });
           } else {
-            const content = (await file.text()).slice(0, 60000);
+            const office = await extractOfficeText(file).catch(() => null);
+            const content = (office ?? (await file.text())).slice(0, 60000);
             fullText += `\n\n--- Documento: ${file.name} ---\n${content}`;
           }
         }
