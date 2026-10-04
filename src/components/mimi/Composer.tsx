@@ -1,5 +1,5 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { ArrowUp, Globe, Mic, Plus, Square } from "lucide-react";
+import { ArrowUp, Globe, Mic, Paperclip, Plus, Square, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -10,7 +10,8 @@ export interface ComposerHandle {
 }
 
 interface ComposerProps {
-  onSend: (text: string) => void;
+  onSend: (text: string, opts: { webSearch: boolean; files: File[] }) => void;
+  allowAttach?: boolean;
   onStop?: () => void;
   busy?: boolean;
   large?: boolean;
@@ -19,13 +20,15 @@ interface ComposerProps {
 }
 
 export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Composer(
-  { onSend, onStop, busy, large, placeholder = "Escribe tu mensaje a Mimi...", onVoice },
+  { onSend, onStop, busy, large, placeholder = "Escribe tu mensaje a Mimi...", onVoice, allowAttach = true },
   ref,
 ) {
   const [value, setValue] = useState("");
   const [webSearch, setWebSearch] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const sendBtnRef = useRef<HTMLButtonElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [files, setFiles] = useState<File[]>([]);
 
   useImperativeHandle(ref, () => ({
     focus: () => textareaRef.current?.focus(),
@@ -39,9 +42,10 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
 
   const submit = () => {
     const text = value.trim();
-    if (!text || busy) return;
-    onSend(text);
+    if ((!text && files.length === 0) || busy) return;
+    onSend(text || "Analiza este documento.", { webSearch, files });
     setValue("");
+    setFiles([]);
   };
 
   return (
@@ -51,6 +55,31 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
         large ? "p-4" : "p-3",
       )}
     >
+      {files.length > 0 && (
+        <div className="mb-2 flex flex-wrap gap-1.5">
+          {files.map((f, i) => (
+            <span key={i} className="flex max-w-[200px] items-center gap-1 rounded-full bg-accent px-2.5 py-1 text-xs text-accent-foreground">
+              <Paperclip className="h-3 w-3 shrink-0" />
+              <span className="truncate">{f.name}</span>
+              <button type="button" aria-label="Quitar archivo" onClick={() => setFiles(files.filter((_, j) => j !== i))}>
+                <X className="h-3 w-3" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+      <input
+        ref={fileRef}
+        type="file"
+        multiple
+        hidden
+        accept=".pdf,.txt,.md,.csv,.json,image/*"
+        onChange={(e) => {
+          const picked = Array.from(e.target.files ?? []).filter((f) => f.size <= 20 * 1024 * 1024);
+          setFiles((prev) => [...prev, ...picked].slice(0, 5));
+          e.target.value = "";
+        }}
+      />
       <textarea
         ref={textareaRef}
         value={value}
@@ -66,7 +95,15 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
         className="w-full resize-none bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
       />
       <div className="mt-2 flex items-center gap-1">
-        <Button variant="ghost" size="icon" className="rounded-full" aria-label="Adjuntar archivo" title="Adjuntar archivo (próximamente)">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-full"
+          aria-label="Adjuntar archivo"
+          title={allowAttach ? "Adjuntar PDF, imagen o texto" : "Abre un chat para adjuntar archivos"}
+          disabled={!allowAttach}
+          onClick={() => fileRef.current?.click()}
+        >
           <Plus className="h-4 w-4" />
         </Button>
         <Button
@@ -74,7 +111,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
           size="icon"
           className={cn("rounded-full", webSearch && "bg-accent text-primary")}
           aria-label="Búsqueda web"
-          title="Búsqueda web"
+          title={webSearch ? "Búsqueda web activada" : "Activar búsqueda web"}
           onClick={() => setWebSearch(!webSearch)}
         >
           <Globe className="h-4 w-4" />
@@ -101,7 +138,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
             size="icon"
             className="rounded-full"
             onClick={submit}
-            disabled={!value.trim()}
+            disabled={!value.trim() && files.length === 0}
             aria-label="Enviar mensaje"
           >
             <ArrowUp className="h-4 w-4" />
