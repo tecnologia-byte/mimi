@@ -128,9 +128,9 @@ export function MimiSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild tooltip="Nuevo chat" className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground">
-              <Link to="/">
-                <Plus className="h-4 w-4" />
+              <Link to="/" className="justify-between">
                 <span>Nuevo chat</span>
+                <Plus className="ml-auto h-4 w-4" />
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -153,6 +153,9 @@ export function MimiSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
+        {!collapsed && threads.length > 0 && (
+          <p className="px-4 pt-2 text-xs font-medium text-muted-foreground">Chats recientes</p>
+        )}
         {!collapsed &&
           groupThreads(threads).map((group) => (
             <SidebarGroup key={group.label}>
