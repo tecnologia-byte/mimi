@@ -1,11 +1,14 @@
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
-import { ArrowUp, Check, ChevronDown, File, Globe, Mic, Plus, Square, X } from "lucide-react";
+import { ArrowUp, Check, ChevronDown, File, Globe, Lock, Mic, Plus, Square, X } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { ALLOWED_FILE_ACCEPT, isCodeFile } from "@/lib/files";
 import { AGENTS, getActiveAgent, setActiveAgent, type AgentId } from "@/lib/agents";
+import { fetchMyAgentAccess, myAgentAccessKey } from "@/lib/roles";
 
 export interface ComposerHandle {
   focus: () => void;
@@ -44,8 +47,10 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
     [imagePreviews],
   );
 
-  // Versiones de Mimi (agentes) + Milt.
+  // Versiones de Mimi (agentes) + Milt. Las especialistas son privadas.
   const MIMI_MODELS = AGENTS;
+  const navigate = useNavigate();
+  const { data: allowedAgents = ["mimi"] } = useQuery({ queryKey: myAgentAccessKey, queryFn: fetchMyAgentAccess });
   const [agentId, setAgentId] = useState<AgentId>("mimi");
   useEffect(() => {
     const sync = () => setAgentId(getActiveAgent());
@@ -53,6 +58,10 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
     window.addEventListener("mimi-agent", sync);
     return () => window.removeEventListener("mimi-agent", sync);
   }, []);
+  // Si perdió el acceso, vuelve a Mimi general.
+  useEffect(() => {
+    if (agentId !== "mimi" && allowedAgents.length > 0 && !allowedAgents.includes(agentId)) setActiveAgent("mimi");
+  }, [agentId, allowedAgents]);
   const activeModel = AGENTS.find((a) => a.id === agentId) ?? AGENTS[0]!;
 
   useImperativeHandle(ref, () => ({
@@ -153,23 +162,35 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
                 <p className="px-2.5 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                   Modelos de Mimi
                 </p>
-                {MIMI_MODELS.map((m) => (
-                  <button
-                    key={m.id}
-                    type="button"
-                    onClick={() => {
-                      setActiveAgent(m.id);
-                      setModelMenuOpen(false);
-                    }}
-                    className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left text-sm text-popover-foreground hover:bg-accent"
-                  >
-                    <span className="flex-1">
-                      <span className="block font-medium">{m.name}</span>
-                      <span className="block text-xs text-muted-foreground">{m.tag}</span>
-                    </span>
-                    {m.id === activeModel.id && <Check className="h-4 w-4 text-primary" />}
-                  </button>
-                ))}
+                {MIMI_MODELS.map((m) => {
+                  const locked = !allowedAgents.includes(m.id);
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => {
+                        setModelMenuOpen(false);
+                        if (locked) {
+                          toast.info(`${m.name} es privada. Solicita acceso.`);
+                          navigate({ to: "/solicitar-acceso" });
+                          return;
+                        }
+                        setActiveAgent(m.id);
+                      }}
+                      className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left text-sm text-popover-foreground hover:bg-accent"
+                    >
+                      <span className={cn("flex-1", locked && "opacity-60")}>
+                        <span className="block font-medium">{m.name}</span>
+                        <span className="block text-xs text-muted-foreground">{locked ? "Privada · solicitar acceso" : m.tag}</span>
+                      </span>
+                      {locked ? (
+                        <Lock className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        m.id === activeModel.id && <Check className="h-4 w-4 text-primary" />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </>
           )}

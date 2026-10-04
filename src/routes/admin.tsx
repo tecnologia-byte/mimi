@@ -5,7 +5,9 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/mimi/AppShell";
 import { Button } from "@/components/ui/button";
 import { pageHead } from "@/lib/head";
-import { ROLE_LABELS, ROLE_ORDER, db, fetchMyRoles, myRolesKey, type AppRole } from "@/lib/roles";
+import { PRIVATE_AGENTS, ROLE_LABELS, ROLE_ORDER, db, fetchMyRoles, myRolesKey, type AppRole } from "@/lib/roles";
+import { supabase } from "@/integrations/supabase/client";
+import { agentName } from "@/lib/agents";
 
 export const Route = createFileRoute("/admin")({
   head: () => pageHead("Administración", "Gestiona los roles del equipo y las solicitudes de acceso a Mimi."),
@@ -13,7 +15,6 @@ export const Route = createFileRoute("/admin")({
 });
 
 type AdminUser = { user_id: string; email: string; full_name: string | null; created_at: string; role: AppRole | null };
-type Request = { id: string; user_id: string; requested_role: AppRole; created_at: string };
 
 function AdminPage({ userId }: { userId: string }) {
   const qc = useQueryClient();
@@ -73,22 +74,31 @@ function AdminPanel({ userId }: { userId: string }) {
       return (data ?? []) as AdminUser[];
     },
   });
+  const access = useQuery({
+    queryKey: ["admin-agent-access"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("admin_agent_access_list");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
   const requests = useQuery({
     queryKey: ["admin-requests"],
     queryFn: async () => {
-      const { data, error } = await db
+      const { data, error } = await supabase
         .from("access_requests")
-        .select("id,user_id,requested_role,created_at")
+        .select("id,user_id,agent,reason,created_at")
         .eq("status", "pendiente")
         .order("created_at");
       if (error) throw error;
-      return (data ?? []) as Request[];
+      return data ?? [];
     },
   });
 
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ["admin-users"] });
     qc.invalidateQueries({ queryKey: ["admin-requests"] });
+    qc.invalidateQueries({ queryKey: ["admin-agent-access"] });
   };
 
   const setRole = async (target: string, role: AppRole) => {
@@ -116,6 +126,16 @@ function AdminPanel({ userId }: { userId: string }) {
     return u?.full_name || u?.email || "Usuario";
   };
 
+  const toggleAgent = async (target: string, agent: string, grant: boolean) => {
+    const { error } = await supabase.rpc("admin_set_agent_access", { _user_id: target, _agent: agent, _grant: grant });
+    if (error) {
+      toast.error("No se pudo cambiar el acceso.");
+      return;
+    }
+    toast.success(grant ? `Acceso a ${agentName(agent)} concedido.` : `Acceso a ${agentName(agent)} retirado.`);
+    access.refetch();
+  };
+
   return (
     <div className="mx-auto w-full max-w-4xl flex-1 overflow-y-auto px-4 py-8">
       <h1 className="text-2xl font-semibold sm:text-3xl">Administración</h1>
@@ -130,8 +150,9 @@ function AdminPanel({ userId }: { userId: string }) {
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{nameOf(r.user_id)}</p>
                 <p className="text-xs text-muted-foreground">
-                  Pide acceso a Mimi Ejecutiva · {new Date(r.created_at).toLocaleDateString("es-DO")}
+                  Pide acceso a {agentName(r.agent)} · {new Date(r.created_at).toLocaleDateString("es-DO")}
                 </p>
+                {r.reason && <p className="mt-1 text-xs italic text-muted-foreground">"{r.reason}"</p>}
               </div>
               <Button size="sm" onClick={() => resolve(r.id, true)}>
                 <Check className="mr-1 h-4 w-4" /> Aprobar
@@ -149,23 +170,42 @@ function AdminPanel({ userId }: { userId: string }) {
         {users.isLoading && <p className="mt-2 text-sm text-muted-foreground">Cargando…</p>}
         <div className="mt-3 space-y-2">
           {users.data?.map((u) => (
-            <div key={u.user_id} className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-3">
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">
-                  {u.full_name || "Sin nombre"} {u.user_id === userId && <span className="text-xs text-primary">(tú)</span>}
-                </p>
-                <p className="truncate text-xs text-muted-foreground">{u.email}</p>
+            <div key={u.user_id} className="rounded-2xl border border-border bg-card p-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">
+                    {u.full_name || "Sin nombre"} {u.user_id === userId && <span className="text-xs text-primary">(tú)</span>}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">{u.email}</p>
+                </div>
+                <select
+                  aria-label={`Rol de ${u.email}`}
+                  value={u.role ?? "empleado"}
+                  onChange={(e) => setRole(u.user_id, e.target.value as AppRole)}
+                  className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm"
+                >
+                  {ROLE_ORDER.map((r) => (
+                    <option key={r} value={r}>{ROLE_LABELS[r]}</option>
+                  ))}
+                </select>
               </div>
-              <select
-                aria-label={`Rol de ${u.email}`}
-                value={u.role ?? "empleado"}
-                onChange={(e) => setRole(u.user_id, e.target.value as AppRole)}
-                className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm"
-              >
-                {ROLE_ORDER.map((r) => (
-                  <option key={r} value={r}>{ROLE_LABELS[r]}</option>
-                ))}
-              </select>
+              {u.role !== "administrador" && (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {PRIVATE_AGENTS.map((a) => {
+                    const on = access.data?.some((x) => x.user_id === u.user_id && x.agent === a) ?? false;
+                    return (
+                      <button
+                        key={a}
+                        type="button"
+                        onClick={() => toggleAgent(u.user_id, a, !on)}
+                        className={`rounded-full border px-2.5 py-1 text-xs ${on ? "border-primary bg-primary/15 text-primary" : "border-border text-muted-foreground hover:bg-accent"}`}
+                      >
+                        {on ? "✓ " : "+ "}{agentName(a)}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           ))}
         </div>

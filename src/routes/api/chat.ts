@@ -131,15 +131,31 @@ export const Route = createFileRoute("/api/chat")({
               .join("\n\n")}`
           : "";
         const agent = body.agent ?? "mimi";
+        if (agent !== "mimi") {
+          const { data: allowed } = await supabase.rpc("has_agent_access", {
+            _user_id: userData.user.id,
+            _agent: agent,
+          });
+          if (!allowed) {
+            return new Response("Esta Mimi es privada. Solicita acceso a un administrador.", { status: 403 });
+          }
+        }
         let agentBlock = "";
         if (agent === "contadora" || agent === "logistica" || agent === "ejecutiva") {
           agentBlock = `\n\n## Tu versión activa\n${SPECIALISTS[agent]}\nSi la tarea también necesita a otra especialista, consúltala con la herramienta consultar_agente.`;
         } else if (agent === "milt") {
           agentBlock =
             "\n\n## Modo Milt\nEres la coordinadora de Milt, el equipo de agentes de IVAD. Para cada tarea divide el trabajo y consulta a Mimi Contadora, Mimi Logística y/o Mimi Ejecutiva con la herramienta consultar_agente (pueden ser varias consultas). Luego une sus respuestas en una solución final clara, indicando qué aportó cada agente.";
-        } else {
-          agentBlock =
-            "\n\n## Milt\nPuedes consultar a Mimi Contadora (finanzas, impuestos), Mimi Logística (inventario, envíos) o Mimi Ejecutiva (gerencia, reportes, decisiones) con la herramienta consultar_agente cuando la pregunta lo requiera.";
+        }
+        // Mimi general solo consulta a las privadas si el usuario tiene acceso a Milt.
+        let canConsult = agent !== "mimi";
+        if (agent === "mimi") {
+          const { data } = await supabase.rpc("has_agent_access", { _user_id: userData.user.id, _agent: "milt" });
+          canConsult = Boolean(data);
+          if (canConsult) {
+            agentBlock =
+              "\n\n## Milt\nPuedes consultar a Mimi Contadora (finanzas, impuestos), Mimi Logística (inventario, envíos) o Mimi Ejecutiva (gerencia, reportes, decisiones) con la herramienta consultar_agente cuando la pregunta lo requiera.";
+          }
         }
         const { result, response } = createResponsesCall(
           request,
@@ -149,7 +165,7 @@ export const Route = createFileRoute("/api/chat")({
             model: "openai/gpt-6-astra",
             system: MIMI_SYSTEM_PROMPT + agentBlock + knowledgeBlock,
             webSearch: body.webSearch === true,
-            tools: { ...createMiltTools(apiKey, request.signal), ...createGmailTools() },
+            tools: { ...(canConsult ? createMiltTools(apiKey, request.signal) : {}), ...createGmailTools() },
           },
           modelMessages,
         );
