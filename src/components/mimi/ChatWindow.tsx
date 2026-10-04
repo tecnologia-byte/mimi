@@ -50,7 +50,7 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
     const timer = setTimeout(() => {
       sessionStorage.removeItem(PENDING_MESSAGE_KEY);
       sendMessage({ text: pending });
-    }, 150);
+    }, 1000);
     return () => clearTimeout(timer);
   }, [sendMessage]);
 
