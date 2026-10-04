@@ -40,7 +40,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchThreads, threadsQueryKey, type Thread } from "@/lib/threads";
-import mimiAvatar from "@/assets/mimi-avatar.png.asset.json";
 
 const sections = [
   { title: "Conocimientos", icon: BookOpen },
