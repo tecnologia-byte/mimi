@@ -15,9 +15,9 @@ export function createMiltTools(apiKey: string, signal: AbortSignal) {
   return {
     consultar_agente: tool({
       description:
-        "Milt: consulta a otra versión de Mimi especialista (contadora o logistica) para que analice una tarea concreta y devuelva su solución.",
+        "Milt: consulta a otra versión de Mimi especialista (contadora, logistica o ejecutiva) para que analice una tarea concreta y devuelva su solución.",
       inputSchema: z.object({
-        agente: z.enum(["contadora", "logistica"]),
+        agente: z.enum(["contadora", "logistica", "ejecutiva"]),
         tarea: z.string().describe("La tarea o pregunta detallada para el agente, con todo el contexto necesario."),
       }),
       execute: async ({ agente, tarea }) => {
