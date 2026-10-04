@@ -1,88 +1,104 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
+import { BarChart3, BookOpen, Lightbulb, PenLine, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
-import { createThread, threadsQueryKey, PENDING_MESSAGE_KEY } from "@/lib/threads";
-import { MIMI_SUGGESTIONS } from "@/lib/mimi";
-import { Composer } from "./Composer";
 import { AboutMimiModal } from "./AboutMimiModal";
-import { Button } from "@/components/ui/button";
+import { Composer } from "./Composer";
+import { createThread, PENDING_MESSAGE_KEY } from "@/lib/threads";
+import { MIMI_SUGGESTIONS } from "@/lib/mimi";
 import mimiHero from "@/assets/mimi-hero.png.asset.json";
 
+const suggestionIcons = [BookOpen, Lightbulb, BarChart3, PenLine];
+
 export function WelcomeScreen({ userId }: { userId: string }) {
-  const [aboutOpen, setAboutOpen] = useState(false);
-  const [creating, setCreating] = useState(false);
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   const startChat = async (text: string) => {
-    if (creating) return;
-    setCreating(true);
-    try {
-      const thread = await createThread(userId);
-      sessionStorage.setItem(PENDING_MESSAGE_KEY, text);
-      queryClient.invalidateQueries({ queryKey: threadsQueryKey });
-      navigate({ to: "/chat/$threadId", params: { threadId: thread.id } });
-    } catch {
+    if (busy) return;
+    setBusy(true);
+    const { data, error } = await createThread(userId);
+    if (error || !data) {
+      setBusy(false);
       toast.error("No se pudo crear el chat. Inténtalo de nuevo.");
-      setCreating(false);
+      return;
     }
+    sessionStorage.setItem(PENDING_MESSAGE_KEY, text);
+    navigate({ to: "/chat/$threadId", params: { threadId: data.id } });
   };
 
   return (
-    <div className="chat-scroll relative flex-1 overflow-y-auto">
-      <div className="watermark-ivad" aria-hidden>
+    <div className="relative flex min-h-full flex-1 flex-col overflow-y-auto">
+      {/* Watermark */}
+      <span
+        aria-hidden
+        className="watermark-ivad pointer-events-none absolute inset-0 flex items-center justify-center select-none"
+      >
         IVAD
-      </div>
+      </span>
 
-      <div className="relative z-10 mx-auto flex min-h-full w-full max-w-5xl flex-col items-center justify-center px-4 py-10">
-        <div className="grid w-full items-center gap-8 lg:grid-cols-[minmax(0,1fr)_auto]">
-          <div className="min-w-0">
-            <h1 className="text-5xl sm:text-6xl">
-              Hola, soy <span className="font-script text-primary">Mimi</span>{" "}
-              <span className="text-primary">✦</span>
-            </h1>
-            <p className="mt-3 text-xl font-medium text-foreground">Tu asistente inteligente de IVAD</p>
-            <p className="mt-2 max-w-lg text-sm text-muted-foreground">
-              Te ayudo a resumir documentos, analizar datos, redactar correos profesionales y mucho más, con el
-              conocimiento de IVAD Home & Goods.
-            </p>
-            <Button variant="outline" className="mt-4 rounded-full" onClick={() => setAboutOpen(true)}>
-              Conocer más sobre mí
-            </Button>
+      {/* Mimi hero, top right, unboxed */}
+      <img
+        src={mimiHero.url}
+        alt="Mimi, asistente de IVAD"
+        className="pointer-events-none absolute right-6 top-6 hidden w-64 select-none object-contain md:block lg:w-80"
+      />
 
-            <div className="mt-6">
-              <Composer large busy={creating} onSend={startChat} />
-              <p className="mt-2 text-xs text-muted-foreground">
-                Mimi puede cometer errores. Verifica la información importante.
-              </p>
-            </div>
+      <div className="relative mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center gap-5 px-4 py-14">
+        <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
+          Hola, soy <span className="font-script text-6xl text-primary sm:text-7xl">Mimi</span>{" "}
+          <span className="text-primary">✦</span>
+        </h1>
+        <p className="text-xl font-medium text-foreground">Tu asistente inteligente de IVAD</p>
+        <p className="max-w-xl border-l-2 border-primary pl-4 text-muted-foreground">
+          Estoy aquí para ayudarte con información, respuestas, redacción, análisis y mucho más.
+          ¿En qué puedo asistirte hoy?
+        </p>
 
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              {MIMI_SUGGESTIONS.map((s) => (
-                <button
-                  key={s.title}
-                  onClick={() => startChat(s.prompt)}
-                  className="rounded-2xl border border-border bg-card p-4 text-left text-sm text-foreground transition-colors hover:border-primary/50 hover:bg-accent"
-                >
-                  {s.title}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <img
-            src={mimiHero.url}
-            alt="Mimi, asistente de IVAD Home & Goods"
-            className="hidden w-72 rounded-3xl border border-border object-cover shadow-2xl lg:block xl:w-80"
-          />
+        <div>
+          <button
+            type="button"
+            onClick={() => setAboutOpen(true)}
+            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            <Sparkles className="h-4 w-4" />
+            Conocer más sobre mí
+          </button>
         </div>
 
-        <p className="mt-10 text-center text-xs text-muted-foreground">
-          Mimi IA de IVAD Home & Goods. Todos los derechos reservados.
+        <Composer onSend={startChat} disabled={busy} large autoFocus />
+
+        <p className="text-center text-xs text-muted-foreground">
+          Mimi puede cometer errores. Verifica la información importante.
         </p>
+
+        <div>
+          <p className="mb-3 text-sm font-semibold">Sugerencias para ti</p>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {MIMI_SUGGESTIONS.map((s, i) => {
+              const Icon = suggestionIcons[i % suggestionIcons.length];
+              return (
+                <button
+                  key={s}
+                  type="button"
+                  disabled={busy}
+                  onClick={() => startChat(s)}
+                  className="rounded-2xl border border-border bg-card p-4 text-left transition-colors hover:border-primary/50 hover:bg-accent disabled:opacity-50"
+                >
+                  <Icon className="mb-3 h-5 w-5 text-foreground" />
+                  <span className="text-sm text-muted-foreground">{s}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
+
+      <footer className="relative pb-4 text-center text-xs text-muted-foreground">
+        Mimi IA de IVAD Home & Goods. Todos los derechos reservados.
+      </footer>
 
       <AboutMimiModal open={aboutOpen} onOpenChange={setAboutOpen} />
     </div>
