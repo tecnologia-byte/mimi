@@ -75,14 +75,10 @@ export function MimiSidebar({ user }: { user: User }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (r) => r.location.pathname });
-  const accountName =
-    (typeof user.user_metadata["full_name"] === "string" && user.user_metadata["full_name"]) ||
-    (typeof user.user_metadata["name"] === "string" && user.user_metadata["name"]) ||
-    "Usuario IVAD";
-  const accountAvatar =
-    (typeof user.user_metadata["avatar_url"] === "string" && user.user_metadata["avatar_url"]) ||
-    (typeof user.user_metadata["picture"] === "string" && user.user_metadata["picture"]) ||
-    null;
+  const meta: Record<string, unknown> = user.user_metadata ?? {};
+  const pick = (k: string) => (typeof meta[k] === "string" && (meta[k] as string)) || "";
+  const accountName = pick("full_name") || pick("name") || "Usuario IVAD";
+  const accountAvatar = pick("avatar_url") || pick("picture") || null;
   const accountInitial = accountName.trim().charAt(0).toUpperCase() || "U";
 
   const { data: threads = [] } = useQuery({ queryKey: threadsQueryKey, queryFn: fetchThreads });
