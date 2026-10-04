@@ -61,11 +61,11 @@ export function WelcomeScreen({ userId }: { userId: string }) {
           </button>
         </div>
 
-        <div className="relative mt-1 pt-28 sm:pt-32 lg:pt-36">
+        <div className="mt-1 flex min-w-0 flex-col">
           <img
             src={mimiHero.url}
             alt="Mimi, asistente de IVAD"
-            className="pointer-events-none absolute bottom-[calc(100%-0.25rem)] right-2 h-32 max-w-[48%] select-none object-contain object-bottom sm:right-5 sm:h-36 lg:h-40"
+            className="pointer-events-none -mb-px mr-2 h-28 w-auto max-w-[58%] self-end object-contain object-bottom select-none sm:mr-5 sm:h-36 sm:max-w-[50%] lg:h-40"
           />
           <Composer onSend={startChat} busy={busy} large />
         </div>
