@@ -43,12 +43,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { fetchThreads, threadsQueryKey, type Thread } from "@/lib/threads";
 
 const sections = [
-  { title: "Conocimientos", icon: BookOpen },
-  { title: "Documentos", icon: FileText },
-  { title: "Plantillas", icon: LayoutTemplate },
-  { title: "Favoritos", icon: Star },
-  { title: "Herramientas", icon: Wrench },
-];
+  { title: "Conocimientos", icon: BookOpen, to: "/conocimientos" },
+  { title: "Documentos", icon: FileText, to: "/documentos" },
+  { title: "Plantillas", icon: LayoutTemplate, to: "/plantillas" },
+  { title: "Favoritos", icon: Star, to: "/favoritos" },
+  { title: "Herramientas", icon: Wrench, to: "/herramientas" },
+] as const;
 
 function groupThreads(threads: Thread[]) {
   const pinned = threads.filter((t) => t.pinned);
@@ -145,12 +145,7 @@ export function MimiSidebar({ user }: { user: User }) {
             <SidebarMenu>
               {sections.map((s) => (
                 <SidebarMenuItem key={s.title}>
-                  <SidebarMenuButton tooltip={s.title} onClick={() =>
-                      s.title === "Documentos"
-                        ? navigate({ to: "/documentos" })
-                        : toast(`${s.title} estará disponible pronto`)
-                    }
-                  >
+                  <SidebarMenuButton tooltip={s.title} isActive={pathname === s.to} onClick={() => navigate({ to: s.to })}>
                     <s.icon className="h-4 w-4" />
                     <span>{s.title}</span>
                   </SidebarMenuButton>
