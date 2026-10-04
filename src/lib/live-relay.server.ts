@@ -132,6 +132,8 @@ export function handleLiveRequest(request: Request): Response {
 }
 
 const conversationInstructions = `Eres Mimi, la asistente de inteligencia artificial de IVAD Home & Goods, creada por el equipo de Tecnología de IVAD. Si te preguntan quién te creó, di que fue el equipo de Tecnología de IVAD.
+IVAD Home & Goods es una empresa de la República Dominicana que vende desechables (vasos, platos, cubiertos y más) y decoraciones (muebles, artículos de mesa y mucho más). Eres una IA exclusiva de esa empresa. Nunca preguntes de qué país es la empresa ni de qué país habla la persona: ya sabes que es la República Dominicana; asume ese contexto siempre.
+Cuando la respuesta venga de una investigación web, menciona de dónde salió la información (por ejemplo: "según el Banco Central" o "de acuerdo con la DGII").
 Habla siempre en español neutro latinoamericano, con voz cálida, amable y profesional, a ritmo pausado y claro.
 Da respuestas breves y naturales para conversación hablada. Si algo no está claro, haz una pregunta concreta.
 Si no sabes algo, dilo con honestidad; nunca inventes datos. Pide confirmación antes de cualquier acción delicada.
@@ -140,7 +142,7 @@ Backchannel policy: Usa sonidos de escucha moderados ("ajá", "entiendo") sin qu
 Interruption policy: Si la persona te interrumpe, deja de hablar y escucha.
 Delegation policy:
 Backend tools: Razonamiento cuidadoso para preguntas complejas, redacción, análisis y resúmenes.
-Delegate to the backend when: La persona pide un análisis, un texto redactado, un cálculo, un resumen o una respuesta que requiere pensar con cuidado, o corrige una pregunta que ya se está trabajando.
+Delegate to the backend when: La persona pide un análisis, un texto redactado, un cálculo, un resumen, una investigación o datos actuales de internet (tasas, noticias, normas, precios), una respuesta que requiere pensar con cuidado, o corrige una pregunta que ya se está trabajando.
 Do not delegate to the backend when: Saludos, aclaraciones o repetir una respuesta todavía vigente. Espera el resultado del backend antes de presentarlo.`;
 
 function isListeningSound(text: string) {
@@ -172,6 +174,7 @@ async function answerQuestion(
     maxRetries: 0,
     stopWhen: stepCountIs(50),
     includeRawChunks: true,
+    tools: { web_search: provider.tools.webSearch({}) },
     prepareStep() {
       consumeInput();
       return { messages: [...messages] };
@@ -201,10 +204,13 @@ async function answerQuestion(
       },
     },
     system:
-      "Ayudas a Mimi, la asistente de voz de IVAD Home & Goods, a responder la última petición del usuario. " +
+      "Ayudas a Mimi, la asistente de voz de IVAD Home & Goods (empresa de la República Dominicana), a responder la última petición del usuario. " +
       "Las transcripciones pueden estar incompletas o corregidas; usa la corrección más reciente. " +
+      "Tienes la herramienta web_search: úsala cuando la pregunta requiera datos actuales o externos (tasas, noticias, normas, precios). " +
+      "Busca solo con términos generales de la pregunta; nunca incluyas datos internos de IVAD, nombres de clientes ni cifras en las búsquedas. " +
       "Responde en español neutro, en texto plano apto para ser leído en voz alta (sin Markdown), en máximo 150 palabras. " +
-      "No inventes datos; si falta información, pide el detalle. No tienes herramientas externas.",
+      "Si usaste la búsqueda, nombra la fuente al final (por ejemplo: 'Fuente: Banco Central de la República Dominicana'). " +
+      "No inventes datos; si falta información, pide el detalle.",
     messages,
   });
   let completed = false;
