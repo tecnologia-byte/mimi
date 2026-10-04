@@ -62,14 +62,14 @@ export function WelcomeScreen({ userId }: { userId: string }) {
         </div>
 
         <div className="mt-2 flex min-w-0 flex-col">
-          <div className="relative z-10 flex justify-end pr-3 sm:pr-6">
+          <div className="relative z-0 flex justify-end pr-3 sm:pr-6">
             <img
               src={mimiHero}
               alt="Mimi, asistente de IVAD"
-              className="pointer-events-none -mb-1 block h-40 w-auto select-none sm:-mb-1.5 sm:h-52 lg:-mb-2 lg:h-60"
+              className="pointer-events-none -mb-3 block h-40 w-auto select-none sm:h-52 lg:h-60"
             />
           </div>
-          <div className="relative">
+          <div className="relative z-10">
             <Composer onSend={startChat} busy={busy} large />
           </div>
         </div>
