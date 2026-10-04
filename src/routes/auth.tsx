@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Moon, Sun } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
@@ -31,6 +31,17 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showThemeChoice, setShowThemeChoice] = useState(false);
+
+  useEffect(() => {
+    setShowThemeChoice(localStorage.getItem("mimi-theme") === null);
+  }, []);
+
+  const chooseTheme = (theme: "dark" | "light") => {
+    document.documentElement.classList.toggle("light", theme === "light");
+    localStorage.setItem("mimi-theme", theme);
+    setShowThemeChoice(false);
+  };
 
   const handleGoogle = async () => {
     const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
@@ -147,6 +158,35 @@ function AuthPage() {
           </button>
         </p>
       </div>
+
+      {showThemeChoice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 px-4 backdrop-blur-sm">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="theme-choice-title"
+            className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-2xl"
+          >
+            <div className="text-center">
+              <img src={ivadLogo.url} alt="IVAD Home & Goods" className="mx-auto h-16 w-16 rounded-full object-cover" />
+              <h2 id="theme-choice-title" className="mt-4 text-xl font-semibold text-foreground">
+                ¿Cómo prefieres ver a Mimi?
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">Podrás cambiarlo cuando quieras.</p>
+            </div>
+            <div className="mt-5 grid grid-cols-2 gap-3">
+              <Button type="button" variant="outline" className="h-24 flex-col gap-2" onClick={() => chooseTheme("dark")}>
+                <Moon className="h-6 w-6" />
+                Modo oscuro
+              </Button>
+              <Button type="button" variant="outline" className="h-24 flex-col gap-2" onClick={() => chooseTheme("light")}>
+                <Sun className="h-6 w-6" />
+                Modo claro
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
