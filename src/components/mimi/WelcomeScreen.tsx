@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 import { AboutMimiModal } from "./AboutMimiModal";
 import { Composer } from "./Composer";
-import { createThread, PENDING_MESSAGE_KEY } from "@/lib/threads";
+import { createThread, PENDING_MESSAGE_KEY, PENDING_VOICE_KEY } from "@/lib/threads";
 import { MIMI_SUGGESTIONS } from "@/lib/mimi";
 import mimiHero from "@/assets/mimi-hero-cutout.png";
 
@@ -16,12 +16,13 @@ export function WelcomeScreen({ userId }: { userId: string }) {
   const [aboutOpen, setAboutOpen] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  const startChat = async (text: string) => {
+  const startChat = async (text: string, voice = false) => {
     if (busy) return;
     setBusy(true);
     try {
       const thread = await createThread(userId);
-      sessionStorage.setItem(PENDING_MESSAGE_KEY, text);
+      if (voice) sessionStorage.setItem(PENDING_VOICE_KEY, "1");
+      else sessionStorage.setItem(PENDING_MESSAGE_KEY, text);
       navigate({ to: "/chat/$threadId", params: { threadId: thread.id } });
     } catch {
       setBusy(false);
@@ -70,7 +71,7 @@ export function WelcomeScreen({ userId }: { userId: string }) {
             />
           </div>
           <div className="relative z-10">
-            <Composer onSend={startChat} busy={busy} large />
+            <Composer onSend={(t) => startChat(t)} onVoice={() => startChat("", true)} busy={busy} large />
           </div>
         </div>
 
