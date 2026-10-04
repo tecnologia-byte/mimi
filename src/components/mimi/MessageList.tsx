@@ -105,7 +105,9 @@ export function MessageList({ messages, busy, onRegenerate }: MessageListProps) 
                         <p className="text-muted-foreground"><b>Tarea que le di:</b> {tp.input.tarea}</p>
                       )}
                       {done ? (
-                        <div className="whitespace-pre-wrap text-foreground">{tp.output?.respuesta}</div>
+                        <div className="text-foreground [&_h1]:mb-1 [&_h1]:text-sm [&_h1]:font-semibold [&_h2]:mb-1 [&_h2]:text-sm [&_h2]:font-semibold [&_h3]:mb-1 [&_h3]:font-semibold [&_li]:my-0.5 [&_ol]:my-1 [&_ol]:list-decimal [&_ol]:pl-4 [&_p]:my-1 [&_table]:my-2 [&_td]:border [&_td]:border-border [&_td]:px-2 [&_td]:py-0.5 [&_th]:border [&_th]:border-border [&_th]:bg-muted [&_th]:px-2 [&_th]:py-0.5 [&_ul]:my-1 [&_ul]:list-disc [&_ul]:pl-4">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{tp.output?.respuesta ?? ""}</ReactMarkdown>
+                        </div>
                       ) : (
                         <p className="flex items-center gap-2 text-muted-foreground">
                           <Loader2 className="h-3 w-3 animate-spin" /> {name} está trabajando en esto…
