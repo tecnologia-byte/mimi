@@ -32,3 +32,4 @@
 - [ ] Drive de IVAD: el usuario debe conectar la cuenta
 - [x] Notificaciones (web y app instalada, aunque esté cerrada) y recordatorios por chat
 - [x] Memoria privada por usuario
+- [ ] Recordatorios avisan también con Mimi abierta
