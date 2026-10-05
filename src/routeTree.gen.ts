@@ -18,9 +18,11 @@ import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as HerramientasRouteImport } from './routes/herramientas'
 import { Route as MiltRouteImport } from './routes/milt'
 import { Route as PlantillasRouteImport } from './routes/plantillas'
+import { Route as RecordatoriosRouteImport } from './routes/recordatorios'
 import { Route as SolicitarAccesoRouteImport } from './routes/solicitar-acceso'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ChatThreadIdRouteImport } from './routes/chat.$threadId'
+import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -67,6 +69,11 @@ const PlantillasRoute = PlantillasRouteImport.update({
   path: '/plantillas',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RecordatoriosRoute = RecordatoriosRouteImport.update({
+  id: '/recordatorios',
+  path: '/recordatorios',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SolicitarAccesoRoute = SolicitarAccesoRouteImport.update({
   id: '/solicitar-acceso',
   path: '/solicitar-acceso',
@@ -82,6 +89,11 @@ const ChatThreadIdRoute = ChatThreadIdRouteImport.update({
   path: '/chat/$threadId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksRemindersRoute = ApiPublicHooksRemindersRouteImport.update({
+  id: '/api/public/hooks/reminders',
+  path: '/api/public/hooks/reminders',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -93,9 +105,11 @@ export interface FileRoutesByFullPath {
   '/herramientas': typeof HerramientasRoute
   '/milt': typeof MiltRoute
   '/plantillas': typeof PlantillasRoute
+  '/recordatorios': typeof RecordatoriosRoute
   '/solicitar-acceso': typeof SolicitarAccesoRoute
   '/api/chat': typeof ApiChatRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
+  '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -107,9 +121,11 @@ export interface FileRoutesByTo {
   '/herramientas': typeof HerramientasRoute
   '/milt': typeof MiltRoute
   '/plantillas': typeof PlantillasRoute
+  '/recordatorios': typeof RecordatoriosRoute
   '/solicitar-acceso': typeof SolicitarAccesoRoute
   '/api/chat': typeof ApiChatRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
+  '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -122,9 +138,11 @@ export interface FileRoutesById {
   '/herramientas': typeof HerramientasRoute
   '/milt': typeof MiltRoute
   '/plantillas': typeof PlantillasRoute
+  '/recordatorios': typeof RecordatoriosRoute
   '/solicitar-acceso': typeof SolicitarAccesoRoute
   '/api/chat': typeof ApiChatRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
+  '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -138,9 +156,11 @@ export interface FileRouteTypes {
     | '/herramientas'
     | '/milt'
     | '/plantillas'
+    | '/recordatorios'
     | '/solicitar-acceso'
     | '/api/chat'
     | '/chat/$threadId'
+    | '/api/public/hooks/reminders'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -152,9 +172,11 @@ export interface FileRouteTypes {
     | '/herramientas'
     | '/milt'
     | '/plantillas'
+    | '/recordatorios'
     | '/solicitar-acceso'
     | '/api/chat'
     | '/chat/$threadId'
+    | '/api/public/hooks/reminders'
   id:
     | '__root__'
     | '/'
@@ -166,9 +188,11 @@ export interface FileRouteTypes {
     | '/herramientas'
     | '/milt'
     | '/plantillas'
+    | '/recordatorios'
     | '/solicitar-acceso'
     | '/api/chat'
     | '/chat/$threadId'
+    | '/api/public/hooks/reminders'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -181,9 +205,11 @@ export interface RootRouteChildren {
   HerramientasRoute: typeof HerramientasRoute
   MiltRoute: typeof MiltRoute
   PlantillasRoute: typeof PlantillasRoute
+  RecordatoriosRoute: typeof RecordatoriosRoute
   SolicitarAccesoRoute: typeof SolicitarAccesoRoute
   ApiChatRoute: typeof ApiChatRoute
   ChatThreadIdRoute: typeof ChatThreadIdRoute
+  ApiPublicHooksRemindersRoute: typeof ApiPublicHooksRemindersRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -251,6 +277,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlantillasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/recordatorios': {
+      id: '/recordatorios'
+      path: '/recordatorios'
+      fullPath: '/recordatorios'
+      preLoaderRoute: typeof RecordatoriosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/solicitar-acceso': {
       id: '/solicitar-acceso'
       path: '/solicitar-acceso'
@@ -272,6 +305,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChatThreadIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/reminders': {
+      id: '/api/public/hooks/reminders'
+      path: '/api/public/hooks/reminders'
+      fullPath: '/api/public/hooks/reminders'
+      preLoaderRoute: typeof ApiPublicHooksRemindersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -285,9 +325,11 @@ const rootRouteChildren: RootRouteChildren = {
   HerramientasRoute: HerramientasRoute,
   MiltRoute: MiltRoute,
   PlantillasRoute: PlantillasRoute,
+  RecordatoriosRoute: RecordatoriosRoute,
   SolicitarAccesoRoute: SolicitarAccesoRoute,
   ApiChatRoute: ApiChatRoute,
   ChatThreadIdRoute: ChatThreadIdRoute,
+  ApiPublicHooksRemindersRoute: ApiPublicHooksRemindersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

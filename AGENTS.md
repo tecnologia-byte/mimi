@@ -11,3 +11,4 @@
 
 - Keep first-message upload objects in the client-side pending chat draft until the new chat mounts, because browser File objects cannot be serialized into session storage.
 - Keep mobile installation manifest-only unless offline support is explicitly requested, so previews cannot be trapped by stale service-worker caches.
+- Push notifications use standard Web Push (VAPID) with a messaging-only worker at public/push-sw.js and a per-minute cron hitting /api/public/hooks/reminders; no Firebase, so no third-party account is needed.

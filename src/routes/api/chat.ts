@@ -8,6 +8,7 @@ import { MIMI_SYSTEM_PROMPT } from "@/lib/mimi";
 import { SPECIALISTS } from "@/lib/agents";
 import { createMiltTools } from "@/lib/milt";
 import { createGmailTools } from "@/lib/gmail-tools";
+import { createReminderTools, reminderPromptBlock } from "@/lib/reminder-tools";
 
 function messageText(message: UIMessage): string {
   return message.parts
@@ -163,9 +164,9 @@ export const Route = createFileRoute("/api/chat")({
             baseURL: "https://ai.gateway.lovable.dev/v1",
             apiKey,
             model: "openai/gpt-6-astra",
-            system: MIMI_SYSTEM_PROMPT + agentBlock + knowledgeBlock,
+            system: MIMI_SYSTEM_PROMPT + agentBlock + knowledgeBlock + reminderPromptBlock(),
             webSearch: body.webSearch === true,
-            tools: { ...(canConsult ? createMiltTools(apiKey, request.signal) : {}), ...createGmailTools() },
+            tools: { ...(canConsult ? createMiltTools(apiKey, request.signal) : {}), ...createGmailTools(), ...createReminderTools(supabase, userData.user.id, threadId) },
           },
           modelMessages,
         );
