@@ -8,6 +8,7 @@ import { MIMI_SYSTEM_PROMPT } from "@/lib/mimi";
 import { SPECIALISTS } from "@/lib/agents";
 import { createMiltTools } from "@/lib/milt";
 import { createGmailTools } from "@/lib/gmail-tools";
+import { createMemoryTools, memoryPromptBlock } from "@/lib/memory-tools";
 import { createReminderTools, reminderPromptBlock } from "@/lib/reminder-tools";
 
 function messageText(message: UIMessage): string {
@@ -158,15 +159,16 @@ export const Route = createFileRoute("/api/chat")({
               "\n\n## Milt\nPuedes consultar a Mimi Contadora (finanzas, impuestos), Mimi Logística (inventario, envíos) o Mimi Ejecutiva (gerencia, reportes, decisiones) con la herramienta consultar_agente cuando la pregunta lo requiera.";
           }
         }
+        const memoryBlock = await memoryPromptBlock(supabase);
         const { result, response } = createResponsesCall(
           request,
           {
             baseURL: "https://ai.gateway.lovable.dev/v1",
             apiKey,
             model: "openai/gpt-6-astra",
-            system: MIMI_SYSTEM_PROMPT + agentBlock + knowledgeBlock + reminderPromptBlock(),
+            system: MIMI_SYSTEM_PROMPT + agentBlock + knowledgeBlock + reminderPromptBlock() + memoryBlock,
             webSearch: body.webSearch === true,
-            tools: { ...(canConsult ? createMiltTools(apiKey, request.signal) : {}), ...createGmailTools(), ...createReminderTools(supabase, userData.user.id, threadId) },
+            tools: { ...(canConsult ? createMiltTools(apiKey, request.signal) : {}), ...createGmailTools(), ...createReminderTools(supabase, userData.user.id, threadId), ...createMemoryTools(supabase, userData.user.id) },
           },
           modelMessages,
         );

@@ -10,6 +10,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { checkAccountAccess } from "@/lib/access";
+import { useReminderAlerts } from "@/hooks/use-reminder-alerts";
 
 export function AppShell({ children }: { children: (userId: string) => ReactNode }) {
   const { user, loading } = useAuth();
@@ -25,6 +26,7 @@ export function AppShell({ children }: { children: (userId: string) => ReactNode
     queryFn: () => checkAccountAccess(user!.id, user!.email),
     staleTime: 30_000,
   });
+  useReminderAlerts(gate === "ok" ? user?.id : undefined);
 
   if (loading || !user || gateLoading) {
     return (

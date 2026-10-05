@@ -16,6 +16,7 @@ import { Route as ConocimientosRouteImport } from './routes/conocimientos'
 import { Route as DocumentosRouteImport } from './routes/documentos'
 import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as HerramientasRouteImport } from './routes/herramientas'
+import { Route as MemoriaRouteImport } from './routes/memoria'
 import { Route as MiltRouteImport } from './routes/milt'
 import { Route as PlantillasRouteImport } from './routes/plantillas'
 import { Route as RecordatoriosRouteImport } from './routes/recordatorios'
@@ -57,6 +58,11 @@ const FavoritosRoute = FavoritosRouteImport.update({
 const HerramientasRoute = HerramientasRouteImport.update({
   id: '/herramientas',
   path: '/herramientas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MemoriaRoute = MemoriaRouteImport.update({
+  id: '/memoria',
+  path: '/memoria',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MiltRoute = MiltRouteImport.update({
@@ -103,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/documentos': typeof DocumentosRoute
   '/favoritos': typeof FavoritosRoute
   '/herramientas': typeof HerramientasRoute
+  '/memoria': typeof MemoriaRoute
   '/milt': typeof MiltRoute
   '/plantillas': typeof PlantillasRoute
   '/recordatorios': typeof RecordatoriosRoute
@@ -119,6 +126,7 @@ export interface FileRoutesByTo {
   '/documentos': typeof DocumentosRoute
   '/favoritos': typeof FavoritosRoute
   '/herramientas': typeof HerramientasRoute
+  '/memoria': typeof MemoriaRoute
   '/milt': typeof MiltRoute
   '/plantillas': typeof PlantillasRoute
   '/recordatorios': typeof RecordatoriosRoute
@@ -136,6 +144,7 @@ export interface FileRoutesById {
   '/documentos': typeof DocumentosRoute
   '/favoritos': typeof FavoritosRoute
   '/herramientas': typeof HerramientasRoute
+  '/memoria': typeof MemoriaRoute
   '/milt': typeof MiltRoute
   '/plantillas': typeof PlantillasRoute
   '/recordatorios': typeof RecordatoriosRoute
@@ -154,6 +163,7 @@ export interface FileRouteTypes {
     | '/documentos'
     | '/favoritos'
     | '/herramientas'
+    | '/memoria'
     | '/milt'
     | '/plantillas'
     | '/recordatorios'
@@ -170,6 +180,7 @@ export interface FileRouteTypes {
     | '/documentos'
     | '/favoritos'
     | '/herramientas'
+    | '/memoria'
     | '/milt'
     | '/plantillas'
     | '/recordatorios'
@@ -186,6 +197,7 @@ export interface FileRouteTypes {
     | '/documentos'
     | '/favoritos'
     | '/herramientas'
+    | '/memoria'
     | '/milt'
     | '/plantillas'
     | '/recordatorios'
@@ -203,6 +215,7 @@ export interface RootRouteChildren {
   DocumentosRoute: typeof DocumentosRoute
   FavoritosRoute: typeof FavoritosRoute
   HerramientasRoute: typeof HerramientasRoute
+  MemoriaRoute: typeof MemoriaRoute
   MiltRoute: typeof MiltRoute
   PlantillasRoute: typeof PlantillasRoute
   RecordatoriosRoute: typeof RecordatoriosRoute
@@ -261,6 +274,13 @@ declare module '@tanstack/react-router' {
       path: '/herramientas'
       fullPath: '/herramientas'
       preLoaderRoute: typeof HerramientasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/memoria': {
+      id: '/memoria'
+      path: '/memoria'
+      fullPath: '/memoria'
+      preLoaderRoute: typeof MemoriaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/milt': {
@@ -323,6 +343,7 @@ const rootRouteChildren: RootRouteChildren = {
   DocumentosRoute: DocumentosRoute,
   FavoritosRoute: FavoritosRoute,
   HerramientasRoute: HerramientasRoute,
+  MemoriaRoute: MemoriaRoute,
   MiltRoute: MiltRoute,
   PlantillasRoute: PlantillasRoute,
   RecordatoriosRoute: RecordatoriosRoute,

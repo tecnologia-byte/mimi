@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { isToday, isYesterday, subDays, isAfter } from "date-fns";
 import {
   Bell,
+  Brain,
   BookOpen,
   FileText,
   LayoutTemplate,
@@ -55,6 +56,7 @@ const sections = [
   { title: "Herramientas", icon: Wrench, to: "/herramientas" },
   { title: "Milt (agentes)", icon: Users, to: "/milt" },
   { title: "Recordatorios", icon: Bell, to: "/recordatorios" },
+  { title: "Memoria", icon: Brain, to: "/memoria" },
 ] as const;
 
 /** Types out a chat title letter by letter when it changes (auto-rename). */
