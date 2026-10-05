@@ -1,14 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { buildPushPayload } from "@block65/webcrypto-web-push";
-import { authenticateCronRequest } from "@/integrations/supabase/cron-auth";
 import { VAPID_PUBLIC_KEY } from "@/lib/push";
 
 export const Route = createFileRoute("/api/public/hooks/reminders")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const denied = await authenticateCronRequest(request);
-        if (denied) return denied;
+        const expected = process.env["REMINDERS_CRON_TOKEN"];
+        const got = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? "";
+        const { createHash, timingSafeEqual } = await import("node:crypto");
+        const h = (v: string) => createHash("sha256").update(v).digest();
+        if (!expected || !timingSafeEqual(h(got), h(expected))) return new Response("Unauthorized", { status: 401 });
         const privateKey = process.env["VAPID_PRIVATE_KEY"];
         if (!privateKey) return new Response("VAPID no configurado", { status: 500 });
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
