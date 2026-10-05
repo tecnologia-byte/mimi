@@ -3,6 +3,7 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { isToday, isYesterday, subDays, isAfter } from "date-fns";
 import {
+  Bell,
   BookOpen,
   FileText,
   LayoutTemplate,
@@ -53,6 +54,7 @@ const sections = [
   { title: "Favoritos", icon: Star, to: "/favoritos" },
   { title: "Herramientas", icon: Wrench, to: "/herramientas" },
   { title: "Milt (agentes)", icon: Users, to: "/milt" },
+  { title: "Recordatorios", icon: Bell, to: "/recordatorios" },
 ] as const;
 
 /** Types out a chat title letter by letter when it changes (auto-rename). */
