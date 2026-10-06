@@ -4,6 +4,7 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { convertToModelMessages, generateText, type UIMessage } from "ai";
 
 import { createResponsesCall } from "@/lib/ai/responses";
+import { getAiConfig } from "@/lib/ai/config";
 import { MIMI_SYSTEM_PROMPT } from "@/lib/mimi";
 import { SPECIALISTS } from "@/lib/agents";
 import { createMiltTools } from "@/lib/milt";
@@ -21,16 +22,16 @@ function messageText(message: UIMessage): string {
 /** Creates a short, topical chat title (e.g. "Temas de la DGII") from the first message. */
 async function generateChatTitle(firstMessage: string): Promise<string> {
   const fallback = firstMessage.slice(0, 48) || "Nuevo chat";
-  const apiKey = process.env["LOVABLE_API_KEY"];
-  if (!apiKey || !firstMessage.trim()) return fallback;
+  const ai = getAiConfig();
+  if (!ai.apiKey || !firstMessage.trim()) return fallback;
   try {
     const provider = createOpenAI({
-      baseURL: "https://ai.gateway.lovable.dev/v1",
-      apiKey,
-      headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
+      baseURL: ai.baseURL,
+      apiKey: ai.apiKey,
+      headers: ai.headers,
     });
     const { text } = await generateText({
-      model: provider.chat("google/gemini-3-flash-preview"),
+      model: provider.chat(ai.titleModel),
       prompt: `Genera un título muy corto (máximo 5 palabras, en español, sin comillas ni punto final) que resuma el tema de este mensaje. Responde solo con el título.\n\nMensaje: ${firstMessage.slice(0, 500)}`,
     });
     const title = text.trim().replace(/^["']|["']$/g, "").slice(0, 60);
@@ -116,8 +117,8 @@ export const Route = createFileRoute("/api/chat")({
           }
         }
 
-        const apiKey = process.env["LOVABLE_API_KEY"];
-        if (!apiKey) {
+        const ai = getAiConfig();
+        if (!ai.apiKey) {
           return new Response(JSON.stringify({ error: "IA no configurada" }), { status: 500 });
         }
 
@@ -163,12 +164,13 @@ export const Route = createFileRoute("/api/chat")({
         const { result, response } = createResponsesCall(
           request,
           {
-            baseURL: "https://ai.gateway.lovable.dev/v1",
-            apiKey,
-            model: "google/gemini-3-flash-preview",
+            baseURL: ai.baseURL,
+            apiKey: ai.apiKey,
+            model: ai.model,
+            headers: ai.headers,
             system: MIMI_SYSTEM_PROMPT + agentBlock + knowledgeBlock + reminderPromptBlock() + memoryBlock,
             webSearch: body.webSearch === true,
-            tools: { ...(canConsult ? createMiltTools(apiKey, request.signal) : {}), ...createGmailTools(), ...createReminderTools(supabase, userData.user.id, threadId), ...createMemoryTools(supabase, userData.user.id) },
+            tools: { ...(canConsult ? createMiltTools(request.signal) : {}), ...createGmailTools(), ...createReminderTools(supabase, userData.user.id, threadId), ...createMemoryTools(supabase, userData.user.id) },
           },
           modelMessages,
         );

@@ -9,14 +9,25 @@ import {
 
 export function createResponsesCall(
   request: Request,
-  config: { baseURL: string; apiKey: string; model: string; system?: string; webSearch?: boolean; tools?: ToolSet },
+  config: {
+    baseURL: string;
+    apiKey: string;
+    model: string;
+    system?: string;
+    webSearch?: boolean;
+    tools?: ToolSet;
+    headers?: Record<string, string>;
+  },
   messages: ModelMessage[],
 ) {
   const runIdFetch = createLovableAiGatewayRunIdFetch(getLovableAiGatewayRunId(request));
   const provider = createOpenAI({
     baseURL: `${config.baseURL.replace(/\/+$/, "").replace(/\/v1$/, "")}/v1`,
     apiKey: config.apiKey,
-    headers: { "Lovable-API-Key": config.apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
+    headers: config.headers ?? {
+      "Lovable-API-Key": config.apiKey,
+      "X-Lovable-AIG-SDK": "vercel-ai-sdk",
+    },
     fetch: runIdFetch.fetch,
   });
   const tools: ToolSet = { ...(config.tools ?? {}) };
