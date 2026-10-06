@@ -4,13 +4,15 @@ import { z } from "zod";
 
 import { SPECIALISTS } from "./agents";
 import { MIMI_SYSTEM_PROMPT } from "./mimi";
+import { getAiConfig } from "./ai/config";
 
 /** Milt: herramienta para que una Mimi consulte a otra versión especialista. */
-export function createMiltTools(apiKey: string, signal: AbortSignal) {
+export function createMiltTools(signal: AbortSignal) {
+  const ai = getAiConfig();
   const provider = createOpenAI({
-    baseURL: "https://ai.gateway.lovable.dev/v1",
-    apiKey,
-    headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
+    baseURL: ai.baseURL,
+    apiKey: ai.apiKey,
+    headers: ai.headers,
   });
   return {
     consultar_agente: tool({
@@ -22,7 +24,7 @@ export function createMiltTools(apiKey: string, signal: AbortSignal) {
       }),
       execute: async ({ agente, tarea }) => {
         const result = streamText({
-          model: provider.chat("google/gemini-3-flash-preview"),
+          model: provider.chat(ai.model),
           system: `${MIMI_SYSTEM_PROMPT}\n\n${SPECIALISTS[agente]}\n\nOtra Mimi te consulta como parte de Milt (agentes de IVAD). Responde directo, completo y conciso para que ella lo use.`,
           prompt: tarea,
           abortSignal: signal,
