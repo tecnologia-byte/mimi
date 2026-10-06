@@ -10,9 +10,9 @@ export function getAiConfig() {
       provider: "openrouter" as const,
       baseURL: "https://openrouter.ai/api/v1",
       apiKey: openRouterKey,
-      // Modelo gratuito de OpenRouter.
-      model: "google/gemini-2.0-flash-exp:free",
-      titleModel: "google/gemini-2.0-flash-exp:free",
+      // Modelo gratuito de OpenRouter (verificado disponible).
+      model: "nvidia/nemotron-3-super-120b-a12b:free",
+      titleModel: "nvidia/nemotron-3-super-120b-a12b:free",
       headers: {
         "HTTP-Referer": "https://mimi.lovable.app",
         "X-Title": "Mimi - Asistente IA de IVAD",
