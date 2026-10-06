@@ -4,6 +4,7 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { convertToModelMessages, generateText, type UIMessage } from "ai";
 
 import { createResponsesCall } from "@/lib/ai/responses";
+import { getAiConfig } from "@/lib/ai/config";
 import { MIMI_SYSTEM_PROMPT } from "@/lib/mimi";
 import { SPECIALISTS } from "@/lib/agents";
 import { createMiltTools } from "@/lib/milt";
@@ -163,12 +164,13 @@ export const Route = createFileRoute("/api/chat")({
         const { result, response } = createResponsesCall(
           request,
           {
-            baseURL: "https://ai.gateway.lovable.dev/v1",
-            apiKey,
-            model: "google/gemini-3-flash-preview",
+            baseURL: ai.baseURL,
+            apiKey: ai.apiKey,
+            model: ai.model,
+            headers: ai.headers,
             system: MIMI_SYSTEM_PROMPT + agentBlock + knowledgeBlock + reminderPromptBlock() + memoryBlock,
             webSearch: body.webSearch === true,
-            tools: { ...(canConsult ? createMiltTools(apiKey, request.signal) : {}), ...createGmailTools(), ...createReminderTools(supabase, userData.user.id, threadId), ...createMemoryTools(supabase, userData.user.id) },
+            tools: { ...(canConsult ? createMiltTools(request.signal) : {}), ...createGmailTools(), ...createReminderTools(supabase, userData.user.id, threadId), ...createMemoryTools(supabase, userData.user.id) },
           },
           modelMessages,
         );
