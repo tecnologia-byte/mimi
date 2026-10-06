@@ -22,11 +22,10 @@ export function createMiltTools(apiKey: string, signal: AbortSignal) {
       }),
       execute: async ({ agente, tarea }) => {
         const result = streamText({
-          model: provider.responses("openai/gpt-6-astra"),
+          model: provider.chat("google/gemini-3-flash-preview"),
           system: `${MIMI_SYSTEM_PROMPT}\n\n${SPECIALISTS[agente]}\n\nOtra Mimi te consulta como parte de Milt (agentes de IVAD). Responde directo, completo y conciso para que ella lo use.`,
           prompt: tarea,
           abortSignal: signal,
-          providerOptions: { openai: { store: false, forceReasoning: true, reasoningEffort: "low" } },
         });
         return { agente, respuesta: await result.text };
       },

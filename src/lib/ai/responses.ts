@@ -19,36 +19,18 @@ export function createResponsesCall(
     headers: { "Lovable-API-Key": config.apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
     fetch: runIdFetch.fetch,
   });
-  const reasoning = config.model !== "openai/chat-latest";
-  const tools: ToolSet = {
-    ...(config.tools ?? {}),
-    ...(config.webSearch ? { web_search: provider.tools.webSearch({}) } : {}),
-  };
+  const tools: ToolSet = { ...(config.tools ?? {}) };
   const system =
     (config.system ?? "") +
     (config.webSearch
-      ? "\n\nBúsqueda web activada: busca en internet solo con términos generales de la pregunta. Nunca incluyas en las búsquedas datos internos, nombres de clientes, cifras ni contenido de documentos de IVAD. Cita las fuentes con enlaces."
+      ? "\n\nBúsqueda web activada: si la pregunta requiere datos actuales de internet, usa tu conocimiento general y dilo con honestidad. Nunca inventes cifras ni fuentes."
       : "");
   const result = streamText({
-    model: provider.responses(config.model),
+    model: provider.chat(config.model),
     messages,
     ...(system ? { system } : {}),
     ...(Object.keys(tools).length ? { tools, stopWhen: stepCountIs(50) } : {}),
-
     abortSignal: request.signal,
-    providerOptions: {
-      openai: {
-        store: false,
-        ...(reasoning
-          ? {
-              forceReasoning: true,
-              reasoningEffort: "low",
-              reasoningSummary: "auto",
-              include: ["reasoning.encrypted_content"],
-            }
-          : {}),
-      },
-    },
   });
   return {
     result,
