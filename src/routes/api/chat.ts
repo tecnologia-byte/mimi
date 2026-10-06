@@ -30,7 +30,7 @@ async function generateChatTitle(firstMessage: string): Promise<string> {
       headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
     });
     const { text } = await generateText({
-      model: provider("openai/gpt-6-astra"),
+      model: provider.chat("google/gemini-3-flash-preview"),
       prompt: `Genera un título muy corto (máximo 5 palabras, en español, sin comillas ni punto final) que resuma el tema de este mensaje. Responde solo con el título.\n\nMensaje: ${firstMessage.slice(0, 500)}`,
     });
     const title = text.trim().replace(/^["']|["']$/g, "").slice(0, 60);
@@ -165,7 +165,7 @@ export const Route = createFileRoute("/api/chat")({
           {
             baseURL: "https://ai.gateway.lovable.dev/v1",
             apiKey,
-            model: "openai/gpt-6-astra",
+            model: "google/gemini-3-flash-preview",
             system: MIMI_SYSTEM_PROMPT + agentBlock + knowledgeBlock + reminderPromptBlock() + memoryBlock,
             webSearch: body.webSearch === true,
             tools: { ...(canConsult ? createMiltTools(apiKey, request.signal) : {}), ...createGmailTools(), ...createReminderTools(supabase, userData.user.id, threadId), ...createMemoryTools(supabase, userData.user.id) },
