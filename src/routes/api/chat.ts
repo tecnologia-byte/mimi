@@ -195,22 +195,16 @@ export const Route = createFileRoute("/api/chat")({
 
         const stream = createUIMessageStream({
           originalMessages: messages,
-          execute: async ({ writer }) => {
-            await writer.merge(result.toUIMessageStream({ sendReasoning: false, sendSources: true }));
-            if (webResults.length > 0) {
-              for (let i = 0; i < webResults.length; i++) {
-                writer.write({
-                  type: "source-url",
-                  sourceId: `web-${i + 1}`,
-                  url: webResults[i].url,
-                  title: webResults[i].title,
-                });
-              }
+          execute: ({ writer }) => {
+            for (let i = 0; i < webResults.length; i++) {
               writer.write({
-                type: "text-delta",
-                textDelta: `\n\n<!--sources:${JSON.stringify(webResults.map((r) => ({ title: r.title, url: r.url })))}-->`,
+                type: "source-url",
+                sourceId: `web-${i + 1}`,
+                url: webResults[i].url,
+                title: webResults[i].title,
               });
             }
+            writer.merge(result.toUIMessageStream({ sendReasoning: false, sendSources: true }));
           },
           onFinish: async ({ responseMessage }) => {
             const sourceParts = webResults.map((r, i) => ({
@@ -223,16 +217,10 @@ export const Route = createFileRoute("/api/chat")({
               ...(responseMessage.parts ?? []),
               ...sourceParts,
             ];
-            const content = messageText(responseMessage);
-            const finalContent =
-              webResults.length > 0 && !content.includes("<!--sources:")
-                ? `${content}\n\n<!--sources:${JSON.stringify(webResults.map((r) => ({ title: r.title, url: r.url })))}-->`
-                : content;
-
             const { error } = await supabase.from("messages").insert({
               thread_id: threadId,
               role: "assistant",
-              content: finalContent,
+              content: messageText(responseMessage),
               parts: allParts as unknown as Record<string, unknown>[],
               sdk_id: responseMessage.id,
             });
