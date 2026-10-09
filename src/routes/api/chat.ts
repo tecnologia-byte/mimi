@@ -173,7 +173,7 @@ export const Route = createFileRoute("/api/chat")({
         if (body.webSearch === true && lastUser) {
           webResults = await searchWeb(messageText(lastUser));
           webBlock = webResults.length
-            ? `\n\n## Resultados de búsqueda web (actuales)\nResponde usando estos resultados. Cita cada dato con el número entre corchetes, por ejemplo [1]. No inventes fuentes.\n\n${webResults
+            ? `\n\n## Búsqueda web ACTIVADA\nAcabas de buscar en internet y estos son resultados reales y actuales. NUNCA digas que no tienes acceso a internet o a datos en tiempo real. Responde directamente con la información de estos resultados (es válido para la empresa: tasas, precios, noticias, leyes, proveedores). Cita cada dato con el número entre corchetes, por ejemplo [1]. No inventes fuentes.\n\n${webResults
                 .map((r, i) => `[${i + 1}] ${r.title}\n${r.url}\n${r.snippet}`)
                 .join("\n\n")}`
             : "\n\nLa búsqueda web no devolvió resultados; dilo con honestidad y responde con lo que sabes.";
