@@ -207,14 +207,25 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
           <Plus className="h-4 w-4" />
         </Button>
         <Button
+          type="button"
           variant="ghost"
-          size="icon"
-          className={cn("rounded-full", webSearch && "bg-accent text-primary")}
+          size={webSearch ? "default" : "icon"}
+          className={cn(
+            "rounded-full transition-all text-xs gap-1.5",
+            webSearch
+              ? "bg-primary/15 text-primary border border-primary/30 px-3 hover:bg-primary/20 font-medium"
+              : "hover:bg-accent text-muted-foreground"
+          )}
           aria-label="Búsqueda web"
-          title={webSearch ? "Búsqueda web activada" : "Activar búsqueda web"}
-          onClick={() => setWebSearch(!webSearch)}
+          title={webSearch ? "Investigación web activada (clic para desactivar)" : "Activar investigación en internet"}
+          onClick={() => {
+            const next = !webSearch;
+            setWebSearch(next);
+            if (next) toast.info("Búsqueda web activada: Mimi consultará fuentes en internet.");
+          }}
         >
-          <Globe className="h-4 w-4" />
+          <Globe className="h-4 w-4 shrink-0 text-primary" />
+          {webSearch && <span className="text-[11px] font-medium hidden sm:inline">Web activada</span>}
         </Button>
         <Button
           variant="ghost"

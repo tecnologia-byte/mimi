@@ -171,7 +171,8 @@ export const Route = createFileRoute("/api/chat")({
         let webResults: WebResult[] = [];
         let webBlock = "";
         if (body.webSearch === true && lastUser) {
-          webResults = await searchWeb(messageText(lastUser));
+          const userQuery = messageText(lastUser).split("--- Documento:")[0].trim();
+          webResults = await searchWeb(userQuery || messageText(lastUser));
           webBlock = webResults.length
             ? `\n\n## Búsqueda web ACTIVADA\nAcabas de buscar en internet y estos son resultados reales y actuales. NUNCA digas que no tienes acceso a internet o a datos en tiempo real. Responde directamente con la información de estos resultados (es válido para la empresa: tasas, precios, noticias, leyes, proveedores). Cita cada dato con el número entre corchetes, por ejemplo [1]. No inventes fuentes.\n\n${webResults
                 .map((r, i) => `[${i + 1}] ${r.title}\n${r.url}\n${r.snippet}`)
@@ -193,18 +194,33 @@ export const Route = createFileRoute("/api/chat")({
 
         const stream = createUIMessageStream({
           originalMessages: messages,
-          execute: ({ writer }) => {
-            webResults.forEach((r, i) =>
-              writer.write({ type: "source-url", sourceId: `web-${i + 1}`, url: r.url, title: r.title }),
-            );
-            writer.merge(result.toUIMessageStream({ sendReasoning: false, sendSources: true }));
+          execute: async ({ writer }) => {
+            for (let i = 0; i < webResults.length; i++) {
+              writer.write({
+                type: "source-url",
+                sourceId: `web-${i + 1}`,
+                url: webResults[i].url,
+                title: webResults[i].title,
+              });
+            }
+            await writer.merge(result.toUIMessageStream({ sendReasoning: false, sendSources: true }));
           },
           onFinish: async ({ responseMessage }) => {
+            const sourceParts = webResults.map((r, i) => ({
+              type: "source-url",
+              sourceId: `web-${i + 1}`,
+              url: r.url,
+              title: r.title,
+            }));
+            const allParts = [
+              ...(responseMessage.parts ?? []),
+              ...sourceParts,
+            ];
             const { error } = await supabase.from("messages").insert({
               thread_id: threadId,
               role: "assistant",
               content: messageText(responseMessage),
-              parts: responseMessage.parts as unknown as Record<string, unknown>[],
+              parts: allParts as unknown as Record<string, unknown>[],
               sdk_id: responseMessage.id,
             });
             if (error) console.error("No se pudo guardar la respuesta de Mimi:", error);

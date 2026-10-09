@@ -54,7 +54,7 @@ function Favorites({ userId }: { userId: string }) {
                   <Link to="/chat/$threadId" params={{ threadId: f.thread_id }}><MessageSquare className="h-3.5 w-3.5" /></Link>
                 </Button>
               )}
-              <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Copiar" onClick={() => { navigator.clipboard.writeText(f.content); toast.success("Copiado"); }}>
+              <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Copiar" onClick={() => { navigator.clipboard.writeText(f.content).then(() => toast.success("Copiado")).catch(() => toast.error("Error al copiar")); }}>
                 <Copy className="h-3.5 w-3.5" />
               </Button>
               <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Eliminar" onClick={() => void remove(f.id)}>

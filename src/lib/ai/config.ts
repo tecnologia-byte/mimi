@@ -6,13 +6,13 @@
 export function getAiConfig() {
   const openRouterKey = process.env["OPENROUTER_API_KEY"]?.trim();
   if (openRouterKey) {
+    const model = process.env["OPENROUTER_MODEL"]?.trim() || "nvidia/nemotron-3-super-120b-a12b:free";
     return {
       provider: "openrouter" as const,
       baseURL: "https://openrouter.ai/api/v1",
       apiKey: openRouterKey,
-      // Modelo gratuito de OpenRouter (verificado disponible).
-      model: "nvidia/nemotron-3-super-120b-a12b:free",
-      titleModel: "nvidia/nemotron-3-super-120b-a12b:free",
+      model,
+      titleModel: model,
       headers: {
         "HTTP-Referer": "https://mimi.lovable.app",
         "X-Title": "Mimi - Asistente IA de IVAD",

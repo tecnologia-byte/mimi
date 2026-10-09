@@ -1,8 +1,8 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { UIMessage } from "ai";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Copy, FileSpreadsheet, FileText, Loader2, Paperclip, RefreshCw, Star, ThumbsDown, ThumbsUp, Users } from "lucide-react";
+import { Copy, ExternalLink, FileSpreadsheet, FileText, Globe, Loader2, Paperclip, RefreshCw, Star, ThumbsDown, ThumbsUp, Users } from "lucide-react";
 import { agentName } from "@/lib/agents";
 import { toast } from "sonner";
 
@@ -16,6 +16,122 @@ function messageText(message: UIMessage): string {
     .filter((part): part is { type: "text"; text: string } => part.type === "text")
     .map((part) => part.text)
     .join("");
+}
+
+interface SourceItem {
+  url: string;
+  title: string;
+  hostname: string;
+}
+
+function safeGetHostname(url: string): string {
+  try {
+    const parsed = new URL(url);
+    return parsed.hostname.replace(/^www\./, "");
+  } catch {
+    return "enlace";
+  }
+}
+
+function SourceFavicon({ hostname }: { hostname: string }) {
+  const [error, setError] = useState(false);
+
+  if (error || !hostname || hostname === "enlace") {
+    return <Globe className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />;
+  }
+
+  return (
+    <img
+      src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=64`}
+      alt=""
+      className="h-3.5 w-3.5 shrink-0 rounded-xs object-contain"
+      loading="lazy"
+      onError={() => setError(true)}
+    />
+  );
+}
+
+function extractSources(message: UIMessage): SourceItem[] {
+  const sources: SourceItem[] = [];
+  const seen = new Set<string>();
+
+  // 1. Partes estructuradas de fuente provenientes del backend
+  for (const part of message.parts ?? []) {
+    if (
+      part.type === "source-url" ||
+      part.type === "source" ||
+      ("url" in part && typeof (part as { url?: unknown }).url === "string")
+    ) {
+      const p = part as { url?: string; title?: string };
+      if (p.url && !seen.has(p.url)) {
+        seen.add(p.url);
+        const host = safeGetHostname(p.url);
+        sources.push({
+          url: p.url,
+          title: p.title?.trim() || host,
+          hostname: host,
+        });
+      }
+    }
+  }
+
+  // 2. Extracción de respaldo desde el texto markdown (ej. [Fuente](https://...))
+  const text = messageText(message);
+  const mdLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+  let match: RegExpExecArray | null;
+  while ((match = mdLinkRegex.exec(text)) !== null) {
+    const rawTitle = match[1].trim();
+    const rawUrl = match[2].trim();
+    if (rawUrl.startsWith("http") && !seen.has(rawUrl)) {
+      seen.add(rawUrl);
+      const host = safeGetHostname(rawUrl);
+      sources.push({
+        url: rawUrl,
+        title: rawTitle && !/^\d+$/.test(rawTitle) ? rawTitle : host,
+        hostname: host,
+      });
+    }
+  }
+
+  return sources;
+}
+
+function MessageSources({ sources }: { sources: SourceItem[] }) {
+  if (sources.length === 0) return null;
+
+  return (
+    <div className="mt-3.5 border-t border-border/40 pt-2.5">
+      <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+        <Globe className="h-3.5 w-3.5 text-primary" />
+        <span>Fuentes consultadas ({sources.length})</span>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {sources.map((source) => (
+          <a
+            key={source.url}
+            href={source.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={`${source.title}\n${source.url}`}
+            className="group flex max-w-[260px] items-center gap-2 rounded-xl border border-border bg-card/70 px-2.5 py-1.5 text-xs text-foreground shadow-xs transition-all hover:border-primary/50 hover:bg-accent hover:shadow-sm"
+          >
+            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-muted/80 p-0.5">
+              <SourceFavicon hostname={source.hostname} />
+            </div>
+            <div className="flex min-w-0 flex-1 flex-col">
+              <span className="truncate text-[11px] font-medium leading-snug text-foreground group-hover:text-primary">
+                {source.title}
+              </span>
+              <span className="truncate text-[10px] text-muted-foreground leading-none">
+                {source.hostname}
+              </span>
+            </div>
+            <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground opacity-40 transition-opacity group-hover:opacity-100 group-hover:text-primary" />
+          </a>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 interface MessageListProps {
@@ -119,36 +235,27 @@ export function MessageList({ messages, busy, onRegenerate }: MessageListProps) 
                 );
               })}
               <div className="prose-sm max-w-none text-sm leading-relaxed text-foreground [&_code]:rounded [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_h1]:mb-2 [&_h1]:text-lg [&_h1]:font-semibold [&_h2]:mb-2 [&_h2]:text-base [&_h2]:font-semibold [&_h3]:mb-1 [&_h3]:font-semibold [&_li]:my-0.5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:my-2 [&_pre]:my-3 [&_pre]:overflow-x-auto [&_pre]:rounded-xl [&_pre]:bg-muted [&_pre]:p-3 [&_table]:my-3 [&_td]:border [&_td]:border-border [&_td]:px-2 [&_td]:py-1 [&_th]:border [&_th]:border-border [&_th]:bg-muted [&_th]:px-2 [&_th]:py-1 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
-              </div>
-              {(() => {
-                const sources = message.parts.filter(
-                  (p): p is { type: "source-url"; sourceId: string; url: string; title?: string } => p.type === "source-url",
-                );
-                const seen = new Set<string>();
-                const unique = sources.filter((s) => (seen.has(s.url) ? false : (seen.add(s.url), true)));
-                return unique.length ? (
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {unique.map((s) => (
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    a: ({ href, children, ...props }) => (
                       <a
-                        key={s.url}
-                        href={s.url}
+                        href={href}
                         target="_blank"
-                        rel="noreferrer"
-                        className="flex max-w-[220px] items-center gap-1 rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground hover:border-primary hover:text-primary"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-0.5 font-medium text-primary underline underline-offset-2 hover:opacity-80"
+                        {...props}
                       >
-                        <img
-                          src={`https://www.google.com/s2/favicons?domain=${new URL(s.url).hostname}&sz=32`}
-                          alt=""
-                          className="h-3.5 w-3.5 shrink-0 rounded-sm"
-                          loading="lazy"
-                        />
-                        <span className="truncate">{s.title || new URL(s.url).hostname}</span>
+                        {children}
+                        <ExternalLink className="inline h-3 w-3 ml-0.5 opacity-60" />
                       </a>
-                    ))}
-                  </div>
-                ) : null;
-              })()}
+                    ),
+                  }}
+                >
+                  {text}
+                </ReactMarkdown>
+              </div>
+              <MessageSources sources={extractSources(message)} />
               {text && (
                 <div className="mt-2 flex items-center gap-1">
                   <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => copy(text)} aria-label="Copiar">

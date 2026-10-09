@@ -23,6 +23,7 @@ function Memory({ userId }: { userId: string }) {
     },
   });
   const remove = async (id?: string) => {
+    if (!id && !window.confirm("¿Estás seguro de que quieres borrar toda la memoria? Esta acción no se puede deshacer.")) return;
     const q = supabase.from("user_memories").delete();
     await (id ? q.eq("id", id) : q.eq("user_id", userId));
     qc.invalidateQueries({ queryKey: key });
