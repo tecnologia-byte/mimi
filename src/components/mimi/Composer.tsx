@@ -29,6 +29,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
   { onSend, onStop, busy, large, placeholder = "Escribe tu mensaje a Mimi...", onVoice, allowAttach = true },
   ref,
 ) {
+  const [value, setValue] = useState("");
   const [webSearch, setWebSearch] = useState(() => {
     if (typeof window !== "undefined") {
       return sessionStorage.getItem("mimi-web-search-pref") === "1";

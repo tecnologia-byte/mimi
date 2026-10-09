@@ -42,19 +42,35 @@ let pendingChatDraft: PendingChatDraft | null = null;
 
 export function setPendingChatDraft(draft: PendingChatDraft) {
   pendingChatDraft = draft;
-  sessionStorage.setItem(PENDING_MESSAGE_KEY, draft.text);
-  sessionStorage.setItem("mimi-pending-web-search", draft.webSearch ? "1" : "0");
+  if (typeof window !== "undefined") {
+    try {
+      sessionStorage.setItem(PENDING_MESSAGE_KEY, draft.text);
+      sessionStorage.setItem("mimi-pending-web-search", draft.webSearch ? "1" : "0");
+    } catch {
+      // ignore
+    }
+  }
 }
 
 export function takePendingChatDraft(): PendingChatDraft | null {
   const draft = pendingChatDraft;
   pendingChatDraft = null;
-  const webSearchStored = sessionStorage.getItem("mimi-pending-web-search") === "1";
-  sessionStorage.removeItem("mimi-pending-web-search");
+  let webSearchStored = false;
+  let pendingText: string | null = null;
+
+  if (typeof window !== "undefined") {
+    try {
+      webSearchStored = sessionStorage.getItem("mimi-pending-web-search") === "1";
+      sessionStorage.removeItem("mimi-pending-web-search");
+      pendingText = sessionStorage.getItem(PENDING_MESSAGE_KEY);
+    } catch {
+      // ignore
+    }
+  }
+
   if (draft) {
     return { ...draft, webSearch: draft.webSearch || webSearchStored };
   }
-  const pendingText = sessionStorage.getItem(PENDING_MESSAGE_KEY);
   if (pendingText !== null) {
     return { text: pendingText, files: [], webSearch: webSearchStored };
   }
