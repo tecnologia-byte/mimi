@@ -31,11 +31,7 @@ export function createResponsesCall(
     fetch: runIdFetch.fetch,
   });
   const tools: ToolSet = { ...(config.tools ?? {}) };
-  const system =
-    (config.system ?? "") +
-    (config.webSearch
-      ? "\n\nBúsqueda web activada: si la pregunta requiere datos actuales de internet, usa tu conocimiento general y dilo con honestidad. Nunca inventes cifras ni fuentes."
-      : "");
+  const system = config.system ?? "";
   const result = streamText({
     model: provider.chat(config.model),
     messages,
