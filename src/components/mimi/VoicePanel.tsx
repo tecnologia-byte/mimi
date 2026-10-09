@@ -71,6 +71,7 @@ export function VoicePanel({ onUserSpeech, reply, busy, onClose }: VoicePanelPro
       let interim = "";
       for (let i = 0; i < e.results.length; i++) {
         const r = e.results[i];
+        if (!r?.[0]) continue;
         if (r.isFinal) finalText += r[0].transcript;
         else interim += r[0].transcript;
       }
