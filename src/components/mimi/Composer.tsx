@@ -29,8 +29,24 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
   { onSend, onStop, busy, large, placeholder = "Escribe tu mensaje a Mimi...", onVoice, allowAttach = true },
   ref,
 ) {
-  const [value, setValue] = useState("");
-  const [webSearch, setWebSearch] = useState(false);
+  const [webSearch, setWebSearch] = useState(() => {
+    if (typeof window !== "undefined") {
+      return sessionStorage.getItem("mimi-web-search-pref") === "1";
+    }
+    return false;
+  });
+
+  const toggleWebSearch = () => {
+    setWebSearch((prev) => {
+      const next = !prev;
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("mimi-web-search-pref", next ? "1" : "0");
+      }
+      if (next) toast.info("Búsqueda web activada: Mimi consultará fuentes en internet.");
+      return next;
+    });
+  };
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<File[]>([]);
@@ -129,6 +145,22 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
           e.target.value = "";
         }}
       />
+      {webSearch && (
+        <div className="mb-2.5 flex items-center justify-between rounded-xl border border-primary/25 bg-primary/10 px-2.5 py-1 text-xs text-primary">
+          <span className="flex items-center gap-1.5 font-medium">
+            <Globe className="h-3.5 w-3.5 shrink-0" />
+            <span>Investigación web activada: Mimi consultará fuentes en internet y mostrará sus enlaces</span>
+          </span>
+          <button
+            type="button"
+            onClick={toggleWebSearch}
+            className="rounded-full p-0.5 text-primary/70 hover:bg-primary/20 hover:text-primary transition-colors"
+            title="Desactivar investigación web"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
       <textarea
         ref={textareaRef}
         value={value}
@@ -213,19 +245,15 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
           className={cn(
             "rounded-full transition-all text-xs gap-1.5",
             webSearch
-              ? "bg-primary/15 text-primary border border-primary/30 px-3 hover:bg-primary/20 font-medium"
+              ? "bg-primary/20 text-primary border border-primary/40 px-3 hover:bg-primary/25 font-semibold shadow-xs"
               : "hover:bg-accent text-muted-foreground"
           )}
           aria-label="Búsqueda web"
           title={webSearch ? "Investigación web activada (clic para desactivar)" : "Activar investigación en internet"}
-          onClick={() => {
-            const next = !webSearch;
-            setWebSearch(next);
-            if (next) toast.info("Búsqueda web activada: Mimi consultará fuentes en internet.");
-          }}
+          onClick={toggleWebSearch}
         >
           <Globe className="h-4 w-4 shrink-0 text-primary" />
-          {webSearch && <span className="text-[11px] font-medium hidden sm:inline">Web activada</span>}
+          {webSearch && <span className="text-[11px] font-semibold hidden sm:inline">Web activa</span>}
         </Button>
         <Button
           variant="ghost"

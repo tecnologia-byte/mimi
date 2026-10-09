@@ -170,11 +170,12 @@ export const Route = createFileRoute("/api/chat")({
         const memoryBlock = await memoryPromptBlock(supabase);
         let webResults: WebResult[] = [];
         let webBlock = "";
-        if (body.webSearch === true && lastUser) {
+        const isWebSearch = body.webSearch === true || String(body.webSearch) === "true";
+        if (isWebSearch && lastUser) {
           const userQuery = messageText(lastUser).split("--- Documento:")[0].trim();
           webResults = await searchWeb(userQuery || messageText(lastUser));
           webBlock = webResults.length
-            ? `\n\n## Búsqueda web ACTIVADA\nAcabas de buscar en internet y estos son resultados reales y actuales. NUNCA digas que no tienes acceso a internet o a datos en tiempo real. Responde directamente con la información de estos resultados (es válido para la empresa: tasas, precios, noticias, leyes, proveedores). Cita cada dato con el número entre corchetes, por ejemplo [1]. No inventes fuentes.\n\n${webResults
+            ? `\n\n## Búsqueda web ACTIVADA (Resultados reales y actuales)\nAcabas de buscar en internet y estos son resultados reales y actuales. NUNCA digas que no tienes acceso a internet o a datos en tiempo real. Responde directamente con la información de estos resultados (es válido para la empresa: tasas, precios, noticias, leyes, proveedores). Cita cada dato con el número entre corchetes, por ejemplo [1]. No inventes fuentes.\n\n${webResults
                 .map((r, i) => `[${i + 1}] ${r.title}\n${r.url}\n${r.snippet}`)
                 .join("\n\n")}`
             : "\n\nLa búsqueda web no devolvió resultados; dilo con honestidad y responde con lo que sabes.";
@@ -195,15 +196,21 @@ export const Route = createFileRoute("/api/chat")({
         const stream = createUIMessageStream({
           originalMessages: messages,
           execute: async ({ writer }) => {
-            for (let i = 0; i < webResults.length; i++) {
+            await writer.merge(result.toUIMessageStream({ sendReasoning: false, sendSources: true }));
+            if (webResults.length > 0) {
+              for (let i = 0; i < webResults.length; i++) {
+                writer.write({
+                  type: "source-url",
+                  sourceId: `web-${i + 1}`,
+                  url: webResults[i].url,
+                  title: webResults[i].title,
+                });
+              }
               writer.write({
-                type: "source-url",
-                sourceId: `web-${i + 1}`,
-                url: webResults[i].url,
-                title: webResults[i].title,
+                type: "text-delta",
+                textDelta: `\n\n<!--sources:${JSON.stringify(webResults.map((r) => ({ title: r.title, url: r.url })))}-->`,
               });
             }
-            await writer.merge(result.toUIMessageStream({ sendReasoning: false, sendSources: true }));
           },
           onFinish: async ({ responseMessage }) => {
             const sourceParts = webResults.map((r, i) => ({
@@ -216,10 +223,16 @@ export const Route = createFileRoute("/api/chat")({
               ...(responseMessage.parts ?? []),
               ...sourceParts,
             ];
+            const content = messageText(responseMessage);
+            const finalContent =
+              webResults.length > 0 && !content.includes("<!--sources:")
+                ? `${content}\n\n<!--sources:${JSON.stringify(webResults.map((r) => ({ title: r.title, url: r.url })))}-->`
+                : content;
+
             const { error } = await supabase.from("messages").insert({
               thread_id: threadId,
               role: "assistant",
-              content: messageText(responseMessage),
+              content: finalContent,
               parts: allParts as unknown as Record<string, unknown>[],
               sdk_id: responseMessage.id,
             });

@@ -51,11 +51,37 @@ function SourceFavicon({ hostname }: { hostname: string }) {
   );
 }
 
+function cleanMarkdownText(raw: string): string {
+  return raw.replace(/<!--sources:[\s\S]*?-->/g, "").trim();
+}
+
 function extractSources(message: UIMessage): SourceItem[] {
   const sources: SourceItem[] = [];
   const seen = new Set<string>();
 
-  // 1. Partes estructuradas de fuente provenientes del backend
+  // 1. Extraer fuentes del token de búsqueda web si está presente en el texto
+  const text = messageText(message);
+  const tokenMatch = text.match(/<!--sources:([\s\S]*?)-->/);
+  if (tokenMatch?.[1]) {
+    try {
+      const parsed = JSON.parse(tokenMatch[1]) as Array<{ title?: string; url?: string }>;
+      for (const item of parsed) {
+        if (item.url && !seen.has(item.url)) {
+          seen.add(item.url);
+          const host = safeGetHostname(item.url);
+          sources.push({
+            url: item.url,
+            title: item.title?.trim() || host,
+            hostname: host,
+          });
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  // 2. Partes estructuradas de fuente provenientes del backend
   for (const part of message.parts ?? []) {
     if (
       part.type === "source-url" ||
@@ -75,8 +101,7 @@ function extractSources(message: UIMessage): SourceItem[] {
     }
   }
 
-  // 2. Extracción de respaldo desde el texto markdown (ej. [Fuente](https://...))
-  const text = messageText(message);
+  // 3. Extracción de respaldo desde el texto markdown (ej. [Fuente](https://...))
   const mdLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
   let match: RegExpExecArray | null;
   while ((match = mdLinkRegex.exec(text)) !== null) {
@@ -100,10 +125,11 @@ function MessageSources({ sources }: { sources: SourceItem[] }) {
   if (sources.length === 0) return null;
 
   return (
-    <div className="mt-3.5 border-t border-border/40 pt-2.5">
-      <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+    <div className="mt-4 border-t border-border/50 pt-3">
+      <div className="mb-2.5 flex items-center gap-1.5 text-xs font-semibold text-foreground/85">
         <Globe className="h-3.5 w-3.5 text-primary" />
-        <span>Fuentes consultadas ({sources.length})</span>
+        <span>Fuentes consultadas</span>
+        <span className="text-[11px] font-normal text-muted-foreground">({sources.length})</span>
       </div>
       <div className="flex flex-wrap gap-2">
         {sources.map((source) => (
@@ -112,21 +138,21 @@ function MessageSources({ sources }: { sources: SourceItem[] }) {
             href={source.url}
             target="_blank"
             rel="noopener noreferrer"
-            title={`${source.title}\n${source.url}`}
-            className="group flex max-w-[260px] items-center gap-2 rounded-xl border border-border bg-card/70 px-2.5 py-1.5 text-xs text-foreground shadow-xs transition-all hover:border-primary/50 hover:bg-accent hover:shadow-sm"
+            title={`Abrir fuente: ${source.title}\n${source.url}`}
+            className="group flex max-w-[280px] items-center gap-2.5 rounded-xl border border-border bg-card/80 px-3 py-2 text-xs text-foreground shadow-xs transition-all hover:border-primary/60 hover:bg-accent/80 hover:shadow-sm"
           >
-            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-muted/80 p-0.5">
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-muted/80 p-1 group-hover:bg-background transition-colors">
               <SourceFavicon hostname={source.hostname} />
             </div>
             <div className="flex min-w-0 flex-1 flex-col">
-              <span className="truncate text-[11px] font-medium leading-snug text-foreground group-hover:text-primary">
+              <span className="truncate text-xs font-semibold leading-tight text-foreground group-hover:text-primary">
                 {source.title}
               </span>
-              <span className="truncate text-[10px] text-muted-foreground leading-none">
+              <span className="truncate text-[11px] text-muted-foreground leading-tight">
                 {source.hostname}
               </span>
             </div>
-            <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground opacity-40 transition-opacity group-hover:opacity-100 group-hover:text-primary" />
+            <ExternalLink className="h-3.5 w-3.5 shrink-0 text-muted-foreground opacity-50 transition-opacity group-hover:opacity-100 group-hover:text-primary" />
           </a>
         ))}
       </div>
@@ -234,7 +260,7 @@ export function MessageList({ messages, busy, onRegenerate }: MessageListProps) 
                   </details>
                 );
               })}
-              <div className="prose-sm max-w-none text-sm leading-relaxed text-foreground [&_code]:rounded [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_h1]:mb-2 [&_h1]:text-lg [&_h1]:font-semibold [&_h2]:mb-2 [&_h2]:text-base [&_h2]:font-semibold [&_h3]:mb-1 [&_h3]:font-semibold [&_li]:my-0.5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:my-2 [&_pre]:my-3 [&_pre]:overflow-x-auto [&_pre]:rounded-xl [&_pre]:bg-muted [&_pre]:p-3 [&_table]:my-3 [&_td]:border [&_td]:border-border [&_td]:px-2 [&_td]:py-1 [&_th]:border [&_th]:border-border [&_th]:bg-muted [&_th]:px-2 [&_th]:py-1 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5">
+              <div className="prose-sm max-w-none text-[15px] leading-relaxed text-foreground [&_code]:rounded [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-xs [&_h1]:mt-5 [&_h1]:mb-3 [&_h1]:text-lg [&_h1]:font-bold [&_h2]:mt-4 [&_h2]:mb-2.5 [&_h2]:text-base [&_h2]:font-bold [&_h3]:mt-3.5 [&_h3]:mb-2 [&_h3]:text-sm [&_h3]:font-bold [&_li]:my-1.5 [&_li]:leading-relaxed [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:space-y-1 [&_p]:mb-3.5 [&_p]:leading-relaxed [&_pre]:my-3.5 [&_pre]:overflow-x-auto [&_pre]:rounded-xl [&_pre]:bg-muted [&_pre]:p-3.5 [&_strong]:font-semibold [&_strong]:text-foreground [&_table]:my-3.5 [&_td]:border [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1.5 [&_th]:border [&_th]:border-border [&_th]:bg-muted [&_th]:px-2.5 [&_th]:py-1.5 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1">
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   components={{
@@ -252,13 +278,13 @@ export function MessageList({ messages, busy, onRegenerate }: MessageListProps) 
                     ),
                   }}
                 >
-                  {text}
+                  {cleanMarkdownText(text)}
                 </ReactMarkdown>
               </div>
               <MessageSources sources={extractSources(message)} />
               {text && (
                 <div className="mt-2 flex items-center gap-1">
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => copy(text)} aria-label="Copiar">
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => copy(cleanMarkdownText(text))} aria-label="Copiar">
                     <Copy className="h-3.5 w-3.5" />
                   </Button>
                   {message.id === lastAssistantId && !busy && (
@@ -266,10 +292,10 @@ export function MessageList({ messages, busy, onRegenerate }: MessageListProps) 
                       <RefreshCw className="h-3.5 w-3.5" />
                     </Button>
                   )}
-                  <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Descargar Word" title="Descargar como Word" onClick={() => void exportWord(text)}>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Descargar Word" title="Descargar como Word" onClick={() => void exportWord(cleanMarkdownText(text))}>
                     <FileText className="h-3.5 w-3.5" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Descargar Excel" title="Descargar como Excel" onClick={() => void exportExcel(text)}>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Descargar Excel" title="Descargar como Excel" onClick={() => void exportExcel(cleanMarkdownText(text))}>
                     <FileSpreadsheet className="h-3.5 w-3.5" />
                   </Button>
                   <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Útil">
@@ -278,7 +304,7 @@ export function MessageList({ messages, busy, onRegenerate }: MessageListProps) 
                   <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="No útil">
                     <ThumbsDown className="h-3.5 w-3.5" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Guardar en Favoritos" title="Guardar en Favoritos" onClick={() => void saveFavorite(text)}>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Guardar en Favoritos" title="Guardar en Favoritos" onClick={() => void saveFavorite(cleanMarkdownText(text))}>
                     <Star className="h-3.5 w-3.5" />
                   </Button>
                 </div>
