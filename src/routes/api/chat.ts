@@ -1,7 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { createOpenAI } from "@ai-sdk/openai";
-import { convertToModelMessages, generateText, type UIMessage } from "ai";
+import {
+  convertToModelMessages,
+  createUIMessageStream,
+  createUIMessageStreamResponse,
+  generateText,
+  type UIMessage,
+} from "ai";
+import { searchWeb, type WebResult } from "@/lib/web-search";
 
 import { createResponsesCall } from "@/lib/ai/responses";
 import { getAiConfig } from "@/lib/ai/config";
@@ -161,24 +168,37 @@ export const Route = createFileRoute("/api/chat")({
           }
         }
         const memoryBlock = await memoryPromptBlock(supabase);
-        const { result, response } = createResponsesCall(
+        let webResults: WebResult[] = [];
+        let webBlock = "";
+        if (body.webSearch === true && lastUser) {
+          webResults = await searchWeb(messageText(lastUser));
+          webBlock = webResults.length
+            ? `\n\n## Búsqueda web ACTIVADA\nAcabas de buscar en internet y estos son resultados reales y actuales. NUNCA digas que no tienes acceso a internet o a datos en tiempo real. Responde directamente con la información de estos resultados (es válido para la empresa: tasas, precios, noticias, leyes, proveedores). Cita cada dato con el número entre corchetes, por ejemplo [1]. No inventes fuentes.\n\n${webResults
+                .map((r, i) => `[${i + 1}] ${r.title}\n${r.url}\n${r.snippet}`)
+                .join("\n\n")}`
+            : "\n\nLa búsqueda web no devolvió resultados; dilo con honestidad y responde con lo que sabes.";
+        }
+        const { result } = createResponsesCall(
           request,
           {
             baseURL: ai.baseURL,
             apiKey: ai.apiKey,
             model: ai.model,
             headers: ai.headers,
-            system: MIMI_SYSTEM_PROMPT + agentBlock + knowledgeBlock + reminderPromptBlock() + memoryBlock,
-            webSearch: body.webSearch === true,
+            system: MIMI_SYSTEM_PROMPT + agentBlock + knowledgeBlock + reminderPromptBlock() + memoryBlock + webBlock,
             tools: { ...(canConsult ? createMiltTools(request.signal) : {}), ...createGmailTools(), ...createReminderTools(supabase, userData.user.id, threadId), ...createMemoryTools(supabase, userData.user.id) },
           },
           modelMessages,
         );
 
-        const streamResponse = result.toUIMessageStreamResponse({
+        const stream = createUIMessageStream({
           originalMessages: messages,
-          sendReasoning: false,
-          sendSources: true,
+          execute: ({ writer }) => {
+            webResults.forEach((r, i) =>
+              writer.write({ type: "source-url", sourceId: `web-${i + 1}`, url: r.url, title: r.title }),
+            );
+            writer.merge(result.toUIMessageStream({ sendReasoning: false, sendSources: true }));
+          },
           onFinish: async ({ responseMessage }) => {
             const { error } = await supabase.from("messages").insert({
               thread_id: threadId,
@@ -190,10 +210,7 @@ export const Route = createFileRoute("/api/chat")({
             if (error) console.error("No se pudo guardar la respuesta de Mimi:", error);
           },
         });
-
-        // Reuse the run-id wrapper for header forwarding.
-        void response;
-        return streamResponse;
+        return createUIMessageStreamResponse({ stream });
       },
     },
   },

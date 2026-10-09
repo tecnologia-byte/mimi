@@ -113,43 +113,16 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
     }
   }, []);
 
-  // Show spoken captions live in the transcript.
-  const onTurnUpdate = useCallback(
-    (turn: VoiceTurn) => {
-      setMessages((prev) => {
-        const msg: UIMessage = { id: turn.id, role: turn.role, parts: [{ type: "text", text: turn.text }] };
-        const i = prev.findIndex((m) => m.id === turn.id);
-        if (i === -1) return [...prev, msg];
-        const next = prev.slice();
-        next[i] = msg;
-        return next;
-      });
-    },
-    [setMessages],
-  );
-
-  // Save each finished spoken turn to this chat's history.
-  const onTurnComplete = useCallback(
-    async (turn: VoiceTurn) => {
-      onTurnUpdate(turn);
-      const { error } = await supabase.from("messages").insert({
-        thread_id: threadId,
-        role: turn.role,
-        content: turn.text,
-        parts: [{ type: "text", text: turn.text }],
-        sdk_id: turn.id,
-      });
-      if (error) toast.error("No se pudo guardar parte de la conversación de voz.");
-      if (turn.role === "user") {
-        await supabase
-          .from("threads")
-          .update({ title: turn.text.slice(0, 60), updated_at: new Date().toISOString() })
-          .eq("id", threadId)
-          .eq("title", "Nuevo chat");
+  const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
+  const reply = lastAssistant
+    ? {
+        id: lastAssistant.id,
+        text: lastAssistant.parts
+          .filter((p): p is { type: "text"; text: string } => p.type === "text")
+          .map((p) => p.text)
+          .join(""),
       }
-    },
-    [onTurnUpdate, threadId],
-  );
+    : null;
 
   const busy = status === "submitted" || status === "streaming";
   const waiting =
@@ -174,8 +147,9 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
       <div className="mx-auto w-full max-w-3xl shrink-0 px-4 pb-4">
         {voiceOpen && (
           <VoicePanel
-            onTurnUpdate={onTurnUpdate}
-            onTurnComplete={onTurnComplete}
+            onUserSpeech={(text) => void handleSend(text, { webSearch: false, files: [] })}
+            reply={reply}
+            busy={busy}
             onClose={() => setVoiceOpen(false)}
           />
         )}
