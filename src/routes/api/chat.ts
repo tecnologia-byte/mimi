@@ -201,8 +201,8 @@ export const Route = createFileRoute("/api/chat")({
               writer.write({
                 type: "source-url",
                 sourceId: `web-${i + 1}`,
-                url: webResults[i].url,
-                title: webResults[i].title,
+                url: webResults[i]!.url,
+                title: webResults[i]!.title,
               });
             }
             writer.merge(result.toUIMessageStream({ sendReasoning: false, sendSources: true }));

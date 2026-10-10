@@ -58,7 +58,7 @@ interface Integration {
   Logo: React.ComponentType<{ className?: string }>;
   tileBg: string;
   status: "connected" | "disconnected" | "upcoming";
-  connectedEmail?: string;
+  connectedEmail?: string | undefined;
   isGoogle?: boolean;
 }
 
@@ -223,14 +223,14 @@ function IntegrationsPage({ userId }: { userId: string }) {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        const parsed = JSON.parse(saved) as Record<string, { connected: boolean; email?: string }>;
+        const parsed = JSON.parse(saved) as Record<string, { connected: boolean; email?: string | undefined }>;
         setIntegrations((prev) =>
           prev.map((item) => {
             if (parsed[item.id]?.connected) {
               return {
                 ...item,
                 status: "connected",
-                connectedEmail: parsed[item.id].email || "tecnologia@ivadsrl.com",
+                connectedEmail: parsed[item.id]?.email || "tecnologia@ivadsrl.com",
               };
             }
             return item;
@@ -245,7 +245,7 @@ function IntegrationsPage({ userId }: { userId: string }) {
   const saveState = (updated: Integration[]) => {
     setIntegrations(updated);
     try {
-      const stateObj: Record<string, { connected: boolean; email?: string }> = {};
+      const stateObj: Record<string, { connected: boolean; email?: string | undefined }> = {};
       for (const item of updated) {
         if (item.status === "connected") {
           stateObj[item.id] = { connected: true, email: item.connectedEmail };

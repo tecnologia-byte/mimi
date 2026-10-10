@@ -141,10 +141,10 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
             onClose={() => setVoiceOpen(false)}
             onUserSpeech={(text) => handleSend(text, { webSearch: false, files: [] })}
             reply={
-              messages.length > 0 && messages[messages.length - 1].role === "assistant"
+              messages.at(-1)?.role === "assistant"
                 ? {
-                    id: messages[messages.length - 1].id,
-                    text: messages[messages.length - 1].parts
+                    id: messages.at(-1)!.id,
+                    text: messages.at(-1)!.parts
                       .map((p) => (p.type === "text" ? p.text : ""))
                       .join(" ")
                       .replace(/[*#_`>|]/g, "")

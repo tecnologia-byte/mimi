@@ -91,7 +91,7 @@ function extractSources(message: UIMessage): SourceItem[] {
   for (const part of message.parts ?? []) {
     if (
       part.type === "source-url" ||
-      part.type === "source" ||
+      (part.type as string) === "source" ||
       ("url" in part && typeof (part as { url?: unknown }).url === "string")
     ) {
       const p = part as { url?: string; title?: string };
@@ -111,8 +111,8 @@ function extractSources(message: UIMessage): SourceItem[] {
   const mdLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
   let match: RegExpExecArray | null;
   while ((match = mdLinkRegex.exec(text)) !== null) {
-    const rawTitle = match[1].trim();
-    const rawUrl = match[2].trim();
+    const rawTitle = (match[1] ?? "").trim();
+    const rawUrl = (match[2] ?? "").trim();
     if (rawUrl.startsWith("http") && !seen.has(rawUrl)) {
       seen.add(rawUrl);
       const host = safeGetHostname(rawUrl);

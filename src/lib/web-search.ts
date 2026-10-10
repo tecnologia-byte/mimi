@@ -71,13 +71,13 @@ export async function searchWeb(query: string, limit = 5): Promise<WebResult[]> 
       const out: WebResult[] = [];
       const links = [...html.matchAll(/<a[^>]*class="result-link"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/g)];
       for (const m of links) {
-        let url = m[1].replace(/&amp;/g, "&");
+        let url = (m[1] ?? "").replace(/&amp;/g, "&");
         const u = url.match(/uddg=([^&]+)/);
         if (u?.[1]) url = decodeURIComponent(u[1]);
         if (url.startsWith("//")) url = "https:" + url;
         if (!url.startsWith("http") || url.includes("duckduckgo.com/y.js")) continue;
 
-        let cleanTitle = decode(m[2]);
+        let cleanTitle = decode(m[2] ?? "");
         if (!cleanTitle || cleanTitle.toLowerCase() === "duckduckgo") {
           try {
             cleanTitle = new URL(url).hostname.replace(/^www\./, "");
