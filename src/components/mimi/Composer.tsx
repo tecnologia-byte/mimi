@@ -23,10 +23,11 @@ interface ComposerProps {
   large?: boolean;
   placeholder?: string;
   onVoice?: () => void;
+  voiceActive?: boolean;
 }
 
 export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Composer(
-  { onSend, onStop, busy, large, placeholder = "Escribe tu mensaje a Mimi...", onVoice, allowAttach = true },
+  { onSend, onStop, busy, large, placeholder = "Escribe tu mensaje a Mimi...", onVoice, allowAttach = true, voiceActive = false },
   ref,
 ) {
   const [value, setValue] = useState("");
@@ -82,7 +83,9 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
   const activeModel = AGENTS.find((a) => a.id === agentId) ?? AGENTS[0]!;
 
   useImperativeHandle(ref, () => ({
-    focus: () => textareaRef.current?.focus(),
+    focus: () => {
+      if (!voiceActive) textareaRef.current?.focus();
+    },
     // Sends the text straight through onSend. Clicking the real send button
     // raced with the disabled state and silently did nothing.
     fillAndSubmit: (text: string, pendingFiles = [], pendingWebSearch = false) => {
@@ -93,7 +96,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
 
   const submit = () => {
     const text = value.trim();
-    if ((!text && files.length === 0) || busy) return;
+    if ((!text && files.length === 0) || busy || voiceActive) return;
     onSend(text || "Analiza este documento.", { webSearch, files });
     setValue("");
     setFiles([]);
@@ -104,6 +107,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
       className={cn(
         "rounded-3xl border border-border bg-card shadow-lg transition-colors focus-within:border-primary/50",
         large ? "p-4" : "p-3",
+        voiceActive && "opacity-75 pointer-events-none"
       )}
     >
       {files.length > 0 && (
@@ -165,6 +169,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
       <textarea
         ref={textareaRef}
         value={value}
+        disabled={voiceActive}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === "Enter" && !e.shiftKey) {
@@ -172,9 +177,9 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
             submit();
           }
         }}
-        placeholder={placeholder}
+        placeholder={voiceActive ? "Llamada de voz en curso con Mimi..." : placeholder}
         rows={large ? 3 : 2}
-        className="w-full resize-none bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+        className="w-full resize-none bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
       />
       <div className="mt-2 flex items-center gap-1">
         <div className="relative">

@@ -21,6 +21,7 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
   const composerRef = useRef<ComposerHandle>(null);
   const sentPending = useRef(false);
   const queryClient = useQueryClient();
+  const [isCallActive, setIsCallActive] = useState(false);
 
   const transport = useMemo(
     () =>
@@ -113,24 +114,13 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
     }
   }, []);
 
-  const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
-  const reply = lastAssistant
-    ? {
-        id: lastAssistant.id,
-        text: lastAssistant.parts
-          .filter((p): p is { type: "text"; text: string } => p.type === "text")
-          .map((p) => p.text)
-          .join(""),
-      }
-    : null;
-
   const busy = status === "submitted" || status === "streaming";
   const waiting =
     status === "submitted" || (status === "streaming" && messages[messages.length - 1]?.role === "user");
 
   useEffect(() => {
-    if (!busy) composerRef.current?.focus();
-  }, [busy]);
+    if (!busy && !isCallActive) composerRef.current?.focus();
+  }, [busy, isCallActive]);
 
   return (
     <>
@@ -147,9 +137,7 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
       <div className="mx-auto w-full max-w-3xl shrink-0 px-4 pb-4">
         {voiceOpen && (
           <VoicePanel
-            onUserSpeech={(text) => void handleSend(text, { webSearch: false, files: [] })}
-            reply={reply}
-            busy={busy}
+            onCallStateChange={setIsCallActive}
             onClose={() => setVoiceOpen(false)}
           />
         )}
@@ -157,6 +145,7 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
           onVoice={() => setVoiceOpen(true)}
           ref={composerRef}
           busy={busy}
+          voiceActive={isCallActive}
           onStop={stop}
           onSend={handleSend}
         />
