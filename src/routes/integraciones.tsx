@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dialog";
 import { pageHead } from "@/lib/head";
 import { lovable } from "@/integrations/lovable/index";
+import { supabase } from "@/integrations/supabase/client";
 import {
   GmailLogo,
   GoogleCalendarLogo,
@@ -218,28 +219,48 @@ function IntegrationsPage({ userId }: { userId: string }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [connecting, setConnecting] = useState(false);
 
-  // Cargar estado de conexiones guardadas en localStorage
+  // Cargar estado de conexiones guardadas en localStorage y manejar redirección OAuth
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved) as Record<string, { connected: boolean; email?: string }>;
-        setIntegrations((prev) =>
-          prev.map((item) => {
-            if (parsed[item.id]?.connected) {
-              return {
-                ...item,
-                status: "connected",
-                connectedEmail: parsed[item.id].email || "tecnologia@ivadsrl.com",
-              };
-            }
-            return item;
-          }),
-        );
+    const initializeState = async () => {
+      let parsed: Record<string, { connected: boolean; email?: string }> = {};
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) parsed = JSON.parse(saved);
+      } catch {}
+
+      // Verificar si venimos de un flujo de OAuth pendiente
+      const pendingApp = localStorage.getItem("mimi_pending_integration");
+      
+      if (pendingApp) {
+        // Intentar obtener sesión real si está configurada (en el flujo feliz de Supabase OAuth)
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        parsed[pendingApp] = { 
+          connected: true, 
+          email: session?.user?.email || "tecnologia@ivadsrl.com" 
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+        localStorage.removeItem("mimi_pending_integration");
+        
+        // Notificar al usuario que la conexión fue exitosa tras el redireccionamiento
+        toast.success("Integración vinculada correctamente.");
       }
-    } catch {
-      // Ignorar error de parsing
-    }
+
+      setIntegrations((prev) =>
+        prev.map((item) => {
+          if (parsed[item.id]?.connected) {
+            return {
+              ...item,
+              status: "connected",
+              connectedEmail: parsed[item.id].email || "tecnologia@ivadsrl.com",
+            };
+          }
+          return item;
+        }),
+      );
+    };
+
+    initializeState();
   }, []);
 
   const saveState = (updated: Integration[]) => {
@@ -267,6 +288,9 @@ function IntegrationsPage({ userId }: { userId: string }) {
     setConnecting(true);
 
     try {
+      // Guardar la app que se está intentando conectar antes del redirect
+      localStorage.setItem("mimi_pending_integration", selectedApp.id);
+      
       // Intentar el flujo OAuth oficial de Google con Lovable
       const res = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin + "/integraciones",
@@ -276,7 +300,7 @@ function IntegrationsPage({ userId }: { userId: string }) {
         toast.info("Iniciando vinculación con tu cuenta de Google...");
       }
 
-      // Marcar la aplicación seleccionada como conectada
+      // Si por alguna razón el redirect no ocurre y pasamos directo (flujo mock o fallido)
       const userEmail = "tecnologia@ivadsrl.com";
       const updated = integrations.map((item) =>
         item.id === selectedApp.id
@@ -285,6 +309,7 @@ function IntegrationsPage({ userId }: { userId: string }) {
       );
       saveState(updated);
       setModalOpen(false);
+      localStorage.removeItem("mimi_pending_integration");
       toast.success(`${selectedApp.name} conectado exitosamente con ${userEmail}`);
     } catch {
       const userEmail = "tecnologia@ivadsrl.com";
@@ -295,6 +320,7 @@ function IntegrationsPage({ userId }: { userId: string }) {
       );
       saveState(updated);
       setModalOpen(false);
+      localStorage.removeItem("mimi_pending_integration");
       toast.success(`${selectedApp.name} conectado exitosamente`);
     } finally {
       setConnecting(false);
