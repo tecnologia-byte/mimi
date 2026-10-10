@@ -110,6 +110,9 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
   // In a call, Mimi speaks first; her text appears once the voice starts.
   const [hideVoiceReply, setHideVoiceReply] = useState(false);
   const revealVoiceReply = useCallback(() => setHideVoiceReply(false), []);
+  useEffect(() => {
+    if (!isCallActive) setHideVoiceReply(false);
+  }, [isCallActive]);
   const visibleMessages =
     hideVoiceReply && messages.at(-1)?.role === "assistant" ? messages.slice(0, -1) : messages;
   useEffect(() => {
