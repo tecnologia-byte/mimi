@@ -35,6 +35,18 @@ export function useLiveVoice({
 
   const start = useCallback(() => {
     shouldContinue.current = true;
+
+    // Desbloquear audio en el navegador (requiere gesto del usuario)
+    if (audioRef.current) {
+      audioRef.current.src = "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU5LjI3LjEwMAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIAD+//7+////+/////v///////8AAAAATGF2YzU5LjM3AAAAAAAAAAAAAAAAJAAAAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA//OUAAAAAAAAAAAAAAAAAAAAAAAWAAAAAA";
+      audioRef.current.play().catch(() => {});
+    }
+    if ('speechSynthesis' in window) {
+      const unlock = new SpeechSynthesisUtterance("");
+      unlock.volume = 0;
+      window.speechSynthesis.speak(unlock);
+    }
+
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
       setState(s => ({ ...s, status: "idle", error: "Reconocimiento de voz no soportado en tu navegador." }));
@@ -165,8 +177,19 @@ export function useLiveVoice({
               window.speechSynthesis.cancel();
               const utterance = new SpeechSynthesisUtterance(textToSpeak);
               utterance.lang = "es-ES";
+              
+              const voices = window.speechSynthesis.getVoices();
+              const esVoice = voices.find(v => v.lang.startsWith('es') && (v.name.includes('Google') || v.name.includes('Premium') || v.name.includes('Natural'))) 
+                           || voices.find(v => v.lang.startsWith('es'));
+              if (esVoice) {
+                utterance.voice = esVoice;
+              }
+
               utterance.onend = handleSpeakEnd;
-              utterance.onerror = handleSpeakEnd;
+              utterance.onerror = (err) => {
+                console.error("SpeechSynthesis error:", err);
+                handleSpeakEnd();
+              };
               window.speechSynthesis.speak(utterance);
             } else {
               handleSpeakEnd();
