@@ -124,64 +124,74 @@ export function useLiveVoice({
   }, [start]);
 
   useEffect(() => {
-    // Si hay una nueva respuesta y no estamos procesando
-    if (reply && reply.id !== lastReplyId.current && !busy) {
-      lastReplyId.current = reply.id;
-      
-      stopAudio();
-      setState(s => ({ ...s, status: "speaking" }));
-
-      // Intentar reproducir usando el endpoint TTS robusto de ElevenLabs
-      if (audioRef.current) {
-        const textToSpeak = reply.text;
-        
-        fetch("/api/tts", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: textToSpeak })
-        })
-        .then(async (response) => {
-          if (!response.ok) throw new Error("TTS API Error");
-          const blob = await response.blob();
-          const url = URL.createObjectURL(blob);
-          if (audioRef.current) {
-            audioRef.current.src = url;
-            audioRef.current.onended = handleSpeakEnd;
-            audioRef.current.play().catch(e => {
-              console.error("Audio play blocked", e);
-              handleSpeakEnd();
-            });
-          }
-        })
-        .catch((e) => {
-          console.warn("Fallback to window.speechSynthesis", e);
-          if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(textToSpeak);
-            utterance.lang = "es-ES";
-            utterance.onend = handleSpeakEnd;
-            utterance.onerror = handleSpeakEnd;
-            window.speechSynthesis.speak(utterance);
-          } else {
-            handleSpeakEnd();
-          }
-        });
-      }
-    }
-  }, [reply, busy, stopAudio, handleSpeakEnd]);
-
-  useEffect(() => {
     if (busy) {
       if (recognitionRef.current) {
         try { recognitionRef.current.abort(); } catch(e) {}
       }
       setState(s => ({ ...s, status: "processing" }));
-    } else if (state.status === "processing") {
-      // If we finished processing but there was no reply? Wait for reply to handle speaking.
-      // But if there's no reply, we should go back to listening if shouldContinue
-      setState(s => ({ ...s, status: "idle" }));
+    } else {
+      // Cuando busy termina, verificamos si hay una nueva respuesta
+      if (reply && reply.id !== lastReplyId.current) {
+        lastReplyId.current = reply.id;
+        
+        stopAudio();
+        setState(s => ({ ...s, status: "speaking" }));
+
+        // Intentar reproducir usando el endpoint TTS robusto de ElevenLabs
+        if (audioRef.current) {
+          const textToSpeak = reply.text;
+          
+          fetch("/api/tts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: textToSpeak })
+          })
+          .then(async (response) => {
+            if (!response.ok) throw new Error("TTS API Error");
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            if (audioRef.current) {
+              audioRef.current.src = url;
+              audioRef.current.onended = handleSpeakEnd;
+              audioRef.current.play().catch(e => {
+                console.error("Audio play blocked", e);
+                handleSpeakEnd();
+              });
+            }
+          })
+          .catch((e) => {
+            console.warn("Fallback to window.speechSynthesis", e);
+            if ('speechSynthesis' in window) {
+              window.speechSynthesis.cancel();
+              const utterance = new SpeechSynthesisUtterance(textToSpeak);
+              utterance.lang = "es-ES";
+              utterance.onend = handleSpeakEnd;
+              utterance.onerror = handleSpeakEnd;
+              window.speechSynthesis.speak(utterance);
+            } else {
+              handleSpeakEnd();
+            }
+          });
+        }
+      } else {
+        // No está busy y no hay respuesta nueva.
+        // Si estábamos "processing", significa que no hubo respuesta (ej: error o el usuario interrumpió).
+        // Transicionamos directamente a listening si shouldContinue, o idle.
+        setState(s => {
+          if (s.status === "processing") {
+            if (shouldContinue.current) {
+              setTimeout(() => {
+                if (shouldContinue.current) start();
+              }, 100);
+              return { ...s, status: "listening" };
+            }
+            return { ...s, status: "idle" };
+          }
+          return s;
+        });
+      }
     }
-  }, [busy, state.status]);
+  }, [busy, reply, stopAudio, handleSpeakEnd, start]);
 
   const stop = useCallback(() => {
     shouldContinue.current = false;
