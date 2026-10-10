@@ -50,7 +50,7 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
   });
 
   const handleSend = useCallback(
-    async (text: string, opts: { webSearch: boolean; files: File[] }) => {
+    async (text: string, opts: { webSearch: boolean; files: File[]; voice?: boolean }) => {
       let fullText = text;
       const fileParts: FileUIPart[] = [];
       if (opts.files.length) {
@@ -80,7 +80,7 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
           }
         }
       }
-      sendMessage({ text: fullText, files: fileParts }, { body: { webSearch: opts.webSearch, agent: getActiveAgent() } });
+      sendMessage({ text: fullText, files: fileParts }, { body: { webSearch: opts.webSearch, agent: getActiveAgent(), voice: opts.voice === true } });
     },
     [sendMessage],
   );
@@ -107,6 +107,14 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
   }, [handleSend]);
 
   const [voiceOpen, setVoiceOpen] = useState(false);
+  // In a call, Mimi speaks first; her text appears once the voice starts.
+  const [hideVoiceReply, setHideVoiceReply] = useState(false);
+  const revealVoiceReply = useCallback(() => setHideVoiceReply(false), []);
+  useEffect(() => {
+    if (!isCallActive) setHideVoiceReply(false);
+  }, [isCallActive]);
+  const visibleMessages =
+    hideVoiceReply && messages.at(-1)?.role === "assistant" ? messages.slice(0, -1) : messages;
   useEffect(() => {
     if (sessionStorage.getItem(PENDING_VOICE_KEY)) {
       sessionStorage.removeItem(PENDING_VOICE_KEY);
@@ -132,17 +140,28 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
           </p>
         </div>
       ) : (
-        <MessageList messages={messages} busy={waiting} onRegenerate={() => regenerate()} />
+        <MessageList messages={visibleMessages} busy={waiting || (hideVoiceReply && visibleMessages !== messages)} onRegenerate={() => regenerate()} />
       )}
       <div className="mx-auto w-full max-w-3xl shrink-0 px-4 pb-4">
         {voiceOpen && (
           <VoicePanel
             onCallStateChange={setIsCallActive}
-            onClose={() => setVoiceOpen(false)}
-            onUserSpeech={(text) => handleSend(text, { webSearch: false, files: [] })}
+            onClose={() => { setVoiceOpen(false); setHideVoiceReply(false); }}
+            onSpeakStart={revealVoiceReply}
+            onUserSpeech={(text) => {
+              setHideVoiceReply(true);
+              void handleSend(text, { webSearch: false, files: [], voice: true });
+            }}
             reply={
-              messages.length > 0 && messages[messages.length - 1].role === "assistant"
-                ? { id: messages[messages.length - 1].id, text: messages[messages.length - 1].content }
+              messages.at(-1)?.role === "assistant"
+                ? {
+                    id: messages.at(-1)!.id,
+                    text: messages.at(-1)!.parts
+                      .map((p) => (p.type === "text" ? p.text : ""))
+                      .join(" ")
+                      .replace(/[*#_`>|]/g, "")
+                      .trim(),
+                  }
                 : null
             }
             busy={busy}

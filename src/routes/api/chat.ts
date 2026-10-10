@@ -70,7 +70,7 @@ export const Route = createFileRoute("/api/chat")({
           return new Response(JSON.stringify({ error: "Sesión inválida" }), { status: 401 });
         }
 
-        let body: { messages?: UIMessage[]; threadId?: string; webSearch?: boolean; agent?: string };
+        let body: { messages?: UIMessage[]; threadId?: string; webSearch?: boolean; agent?: string; voice?: boolean };
         try {
           body = await request.json();
         } catch {
@@ -173,7 +173,7 @@ export const Route = createFileRoute("/api/chat")({
         let webBlock = "";
         const isWebSearch = body.webSearch === true || String(body.webSearch) === "true";
         if (isWebSearch && lastUser) {
-          const userQuery = messageText(lastUser).split("--- Documento:")[0].trim();
+          const userQuery = messageText(lastUser).split("--- Documento:")[0]!.trim();
           webResults = await searchWeb(userQuery || messageText(lastUser));
           webBlock = webResults.length
             ? `\n\n## Búsqueda web ACTIVADA (Resultados reales y actuales)\nAcabas de buscar en internet y estos son resultados reales y actuales. NUNCA digas que no tienes acceso a internet o a datos en tiempo real. Responde directamente con la información de estos resultados (es válido para la empresa: tasas, precios, noticias, leyes, proveedores). No inventes fuentes.\n\nREGLA ESTRICTA DE FUENTES: NUNCA escribas una lista de enlaces, URLs ni encabezados de "Fuentes consultadas" en tu texto (ni al principio ni al final). La plataforma web muestra automáticamente las tarjetas con enlaces e iconos al final del mensaje. Responde directamente el contenido de forma limpia, clara y estructurada.\n\n${webResults
@@ -181,6 +181,9 @@ export const Route = createFileRoute("/api/chat")({
                 .join("\n\n")}`
             : "\n\nLa búsqueda web no devolvió resultados; dilo con honestidad y responde con lo que sabes.";
         }
+        const voiceBlock = body.voice === true
+          ? "\n\n## MODO LLAMADA DE VOZ (prioridad máxima)\nEstás en una llamada telefónica real. Habla como una persona: frases cortas y naturales, máximo 2 o 3 oraciones por turno. NUNCA uses listas, viñetas, numeraciones, títulos, tablas, emojis, asteriscos ni enlaces. Entiende el lenguaje coloquial dominicano y lo que la persona quiere decir aunque lo diga desordenado. Guía paso a paso: da una sola idea o paso a la vez y termina con una pregunta corta para seguir la conversación (por ejemplo: «¿Te lo explico más?»). Usa expresiones naturales como «claro», «mira», «perfecto». Si algo es largo, resume y ofrece seguir."
+          : "";
         const { result } = createResponsesCall(
           request,
           {
@@ -188,7 +191,7 @@ export const Route = createFileRoute("/api/chat")({
             apiKey: ai.apiKey,
             model: ai.model,
             headers: ai.headers,
-            system: MIMI_SYSTEM_PROMPT + agentBlock + knowledgeBlock + reminderPromptBlock() + memoryBlock + webBlock,
+            system: MIMI_SYSTEM_PROMPT + agentBlock + knowledgeBlock + reminderPromptBlock() + memoryBlock + webBlock + voiceBlock,
             tools: { ...(canConsult ? createMiltTools(request.signal) : {}), ...createGmailTools(), ...createReminderTools(supabase, userData.user.id, threadId), ...createMemoryTools(supabase, userData.user.id) },
           },
           modelMessages,
@@ -201,8 +204,8 @@ export const Route = createFileRoute("/api/chat")({
               writer.write({
                 type: "source-url",
                 sourceId: `web-${i + 1}`,
-                url: webResults[i].url,
-                title: webResults[i].title,
+                url: webResults[i]!.url,
+                title: webResults[i]!.title,
               });
             }
             writer.merge(result.toUIMessageStream({ sendReasoning: false, sendSources: true }));
