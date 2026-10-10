@@ -6,12 +6,13 @@ import {
   createUIMessageStream,
   createUIMessageStreamResponse,
   generateText,
+  experimental_fallback,
   type UIMessage,
 } from "ai";
 import { searchWeb, type WebResult } from "@/lib/web-search";
 
 import { createResponsesCall } from "@/lib/ai/responses";
-import { getAiConfig } from "@/lib/ai/config";
+import { getAiConfigs, getAiConfig } from "@/lib/ai/config";
 import { MIMI_SYSTEM_PROMPT } from "@/lib/mimi";
 import { SPECIALISTS } from "@/lib/agents";
 import { createMiltTools } from "@/lib/milt";
@@ -30,16 +31,24 @@ function messageText(message: UIMessage): string {
 /** Creates a short, topical chat title (e.g. "Temas de la DGII") from the first message. */
 async function generateChatTitle(firstMessage: string): Promise<string> {
   const fallback = firstMessage.slice(0, 48) || "Nuevo chat";
-  const ai = getAiConfig();
-  if (!ai.apiKey || !firstMessage.trim()) return fallback;
+  const configs = getAiConfigs();
+  if (!configs.length || !firstMessage.trim()) return fallback;
+  
   try {
-    const provider = createOpenAI({
-      baseURL: ai.baseURL,
-      apiKey: ai.apiKey,
-      headers: ai.headers,
+    const models = configs.map(config => {
+      const provider = createOpenAI({
+        baseURL: `${config.baseURL.replace(/\/+$/, "").replace(/\/v1$/, "")}/v1`,
+        apiKey: config.apiKey,
+        headers: config.headers && Object.keys(config.headers).length > 0 ? config.headers : {
+          "Lovable-API-Key": config.apiKey || "",
+          "X-Lovable-AIG-SDK": "vercel-ai-sdk",
+        },
+      });
+      return provider.chat(config.titleModel);
     });
+
     const { text } = await generateText({
-      model: provider.chat(ai.titleModel),
+      model: experimental_fallback(models),
       prompt: `Genera un título muy corto (máximo 5 palabras, en español, sin comillas ni punto final) que resuma el tema de este mensaje. Responde solo con el título.\n\nMensaje: ${firstMessage.slice(0, 500)}`,
     });
     const title = text.trim().replace(/^["']|["']$/g, "").slice(0, 60);
@@ -126,8 +135,8 @@ export const Route = createFileRoute("/api/chat")({
           }
         }
 
-        const ai = getAiConfig();
-        if (!ai.apiKey) {
+        const configs = getAiConfigs();
+        if (configs.length === 0) {
           return new Response(JSON.stringify({ error: "IA no configurada" }), { status: 500 });
         }
 
@@ -189,11 +198,8 @@ export const Route = createFileRoute("/api/chat")({
 
         const { result } = createResponsesCall(
           request,
+          configs,
           {
-            baseURL: ai.baseURL,
-            apiKey: ai.apiKey,
-            model: ai.model,
-            headers: ai.headers,
             system: MIMI_SYSTEM_PROMPT + agentBlock + antiHallucinationBlock + knowledgeBlock + reminderPromptBlock() + memoryBlock + webBlock + voiceBlock,
             tools: { 
               ...(canConsult ? createMiltTools(request.signal) : {}), 

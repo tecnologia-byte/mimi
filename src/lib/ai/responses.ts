@@ -1,44 +1,49 @@
 import { createOpenAI } from "@ai-sdk/openai";
-import { stepCountIs, streamText, type ModelMessage, type ToolSet } from "ai";
+import { experimental_fallback, stepCountIs, streamText, type ModelMessage, type ToolSet } from "ai";
 
 import {
   createLovableAiGatewayRunIdFetch,
   getLovableAiGatewayRunId,
   withLovableAiGatewayRunIdHeader,
 } from "./run-id.ts";
+import { type AiConfig } from "./config.ts";
 
 export function createResponsesCall(
   request: Request,
-  config: {
-    baseURL: string;
-    apiKey: string;
-    model: string;
+  configs: AiConfig[],
+  options: {
     system?: string;
     webSearch?: boolean;
     tools?: ToolSet;
-    headers?: Record<string, string>;
   },
   messages: ModelMessage[],
 ) {
   const runIdFetch = createLovableAiGatewayRunIdFetch(getLovableAiGatewayRunId(request));
-  const provider = createOpenAI({
-    baseURL: `${config.baseURL.replace(/\/+$/, "").replace(/\/v1$/, "")}/v1`,
-    apiKey: config.apiKey,
-    headers: config.headers ?? {
-      "Lovable-API-Key": config.apiKey,
-      "X-Lovable-AIG-SDK": "vercel-ai-sdk",
-    },
-    fetch: runIdFetch.fetch,
+  
+  const models = configs.map(config => {
+    const provider = createOpenAI({
+      baseURL: `${config.baseURL.replace(/\/+$/, "").replace(/\/v1$/, "")}/v1`,
+      apiKey: config.apiKey,
+      headers: config.headers && Object.keys(config.headers).length > 0 ? config.headers : {
+        "Lovable-API-Key": config.apiKey || "",
+        "X-Lovable-AIG-SDK": "vercel-ai-sdk",
+      },
+      fetch: runIdFetch.fetch,
+    });
+    return provider.chat(config.model);
   });
-  const tools: ToolSet = { ...(config.tools ?? {}) };
-  const system = config.system ?? "";
+
+  const tools: ToolSet = { ...(options.tools ?? {}) };
+  const system = options.system ?? "";
+  
   const result = streamText({
-    model: provider.chat(config.model),
+    model: experimental_fallback(models),
     messages,
     ...(system ? { system } : {}),
     ...(Object.keys(tools).length ? { tools, stopWhen: stepCountIs(50) } : {}),
     abortSignal: request.signal,
   });
+  
   return {
     result,
     response: () =>
