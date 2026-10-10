@@ -3,16 +3,9 @@ import { z } from "zod";
 
 type ConnectionStatus = 'connected' | 'connecting' | 'offline';
 
-let cachedInventory: any[] = [
-  { id: "PROD-001", sku: "PROD-001", codigoProducto: "PROD-001", codigoImportacion: null, codigoArancelario: null, detallesSistema: null, nombre: "Vasos plásticos 7oz", stock: 120, limite: 500, prioridad: "Alta" },
-  { id: "PROD-002", sku: "PROD-002", codigoProducto: "PROD-002", codigoImportacion: null, codigoArancelario: null, detallesSistema: null, nombre: "Platos desechables nº 9", stock: 50, limite: 300, prioridad: "Crítica" },
-  { id: "PROD-003", sku: "PROD-003", codigoProducto: "PROD-003", codigoImportacion: null, codigoArancelario: null, detallesSistema: null, nombre: "Cubiertos plásticos premium", stock: 85, limite: 200, prioridad: "Media" },
-];
+let cachedInventory: any[] = [];
 
-let cachedSystemAlerts: any[] = [
-  { tipo: "Proveedor", mensaje: "Retraso de 2 días en entrega de servilletas.", severidad: "Media" },
-  { tipo: "Despacho", mensaje: "Camión de ruta zona norte en mantenimiento.", severidad: "Alta" }
-];
+let cachedSystemAlerts: any[] = [];
 
 let connectionStatus: ConnectionStatus = 'offline';
 let lastUpdate: string = new Date().toISOString();
