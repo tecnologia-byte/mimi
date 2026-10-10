@@ -4,6 +4,21 @@ import { getInventoryData, getSystemAlertsData } from "./inventory-stream";
 
 export function createExecutiveTools() {
   return {
+    consultar_datos_sistema: tool({
+      description: "Consulta y responde sobre CUALQUIER dato del sistema en tiempo real. Esto incluye el catálogo completo de productos, existencias totales, códigos de importación, almacenes, alertas, inventario crítico y consultas generales del sistema consumiendo los datos decodificados del cliente binario.",
+      parameters: z.object({
+        query: z.string().describe("La consulta específica sobre el sistema o inventario, por ejemplo 'catálogo de productos', 'existencias totales', 'códigos de importación', 'alertas', etc.")
+      }),
+      execute: async () => {
+        const inventory = getInventoryData();
+        const alerts = getSystemAlertsData();
+        return {
+          inventario: inventory,
+          alertas: alerts,
+          estado_sistema: "En línea, procesando stream binario en tiempo real"
+        };
+      },
+    }),
     get_low_stock_products: tool({
       description: "Consulta los productos próximos a agotarse en tiempo real y el stock crítico. Si los datos incluyen 'código de importación', 'partida arancelaria' o 'SKU', asegúrate de formatearlos y entregarlos explícitamente en tu respuesta.",
       parameters: z.object({}),
@@ -27,7 +42,7 @@ export function createExecutiveTools() {
       },
     }),
     alertas_sistema: tool({
-      description: "Consulta las alertas activas del sistema (retrasos de proveedores, problemas de despacho).",
+      description: "Consulta las alertas activas del sistema (retrasos de proveedores, problemas de despacho, etc.) consumiendo el stream en tiempo real.",
       parameters: z.object({}),
       execute: async () => {
         const data = getSystemAlertsData();
