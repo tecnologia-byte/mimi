@@ -142,7 +142,14 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
             onUserSpeech={(text) => handleSend(text, { webSearch: false, files: [] })}
             reply={
               messages.length > 0 && messages[messages.length - 1].role === "assistant"
-                ? { id: messages[messages.length - 1].id, text: messages[messages.length - 1].content }
+                ? {
+                    id: messages[messages.length - 1].id,
+                    text: messages[messages.length - 1].parts
+                      .map((p) => (p.type === "text" ? p.text : ""))
+                      .join(" ")
+                      .replace(/[*#_`>|]/g, "")
+                      .trim(),
+                  }
                 : null
             }
             busy={busy}
