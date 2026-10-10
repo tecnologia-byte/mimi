@@ -173,7 +173,7 @@ export const Route = createFileRoute("/api/chat")({
         let webBlock = "";
         const isWebSearch = body.webSearch === true || String(body.webSearch) === "true";
         if (isWebSearch && lastUser) {
-          const userQuery = messageText(lastUser).split("--- Documento:")[0].trim();
+          const userQuery = messageText(lastUser).split("--- Documento:")[0]!.trim();
           webResults = await searchWeb(userQuery || messageText(lastUser));
           webBlock = webResults.length
             ? `\n\n## Búsqueda web ACTIVADA (Resultados reales y actuales)\nAcabas de buscar en internet y estos son resultados reales y actuales. NUNCA digas que no tienes acceso a internet o a datos en tiempo real. Responde directamente con la información de estos resultados (es válido para la empresa: tasas, precios, noticias, leyes, proveedores). No inventes fuentes.\n\nREGLA ESTRICTA DE FUENTES: NUNCA escribas una lista de enlaces, URLs ni encabezados de "Fuentes consultadas" en tu texto (ni al principio ni al final). La plataforma web muestra automáticamente las tarjetas con enlaces e iconos al final del mensaje. Responde directamente el contenido de forma limpia, clara y estructurada.\n\n${webResults
