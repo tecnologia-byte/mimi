@@ -1,25 +1,15 @@
 import { useState, useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import {
-  Mail,
-  Calendar,
-  HardDrive,
-  FileSpreadsheet,
-  FileText,
   CheckCircle2,
-  AlertCircle,
-  ExternalLink,
   Shield,
   ShieldCheck,
-  Sparkles,
   Lock,
   Layers,
-  MessageSquare,
-  Send,
   RefreshCw,
   LogOut,
-  ChevronRight,
   Info,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/mimi/AppShell";
@@ -35,6 +25,17 @@ import {
 } from "@/components/ui/dialog";
 import { pageHead } from "@/lib/head";
 import { lovable } from "@/integrations/lovable/index";
+import {
+  GmailLogo,
+  GoogleCalendarLogo,
+  GoogleDriveLogo,
+  GoogleSheetsLogo,
+  GoogleDocsLogo,
+  OutlookLogo,
+  WhatsAppLogo,
+  ResendLogo,
+  SlackLogo,
+} from "@/components/mimi/AppLogos";
 
 export const Route = createFileRoute("/integraciones")({
   head: () =>
@@ -54,9 +55,8 @@ interface Integration {
   categoryLabel: string;
   description: string;
   capabilities: string[];
-  icon: typeof Mail;
-  iconColor: string;
-  bgColor: string;
+  Logo: React.ComponentType<{ className?: string }>;
+  tileBg: string;
   status: "connected" | "disconnected" | "upcoming";
   connectedEmail?: string;
   isGoogle?: boolean;
@@ -75,9 +75,8 @@ const DEFAULT_INTEGRATIONS: Integration[] = [
       "Redactar correos con formato corporativo de IVAD",
       "Confirmación humana obligatoria antes de enviar",
     ],
-    icon: Mail,
-    iconColor: "text-red-500",
-    bgColor: "bg-red-500/10 border-red-500/20",
+    Logo: GmailLogo,
+    tileBg: "bg-white dark:bg-card shadow-xs border-border/80",
     status: "disconnected",
     isGoogle: true,
   },
@@ -93,9 +92,8 @@ const DEFAULT_INTEGRATIONS: Integration[] = [
       "Agendar citas y reuniones con enlaces de Meet",
       "Verificar disponibilidad de horarios del equipo",
     ],
-    icon: Calendar,
-    iconColor: "text-blue-500",
-    bgColor: "bg-blue-500/10 border-blue-500/20",
+    Logo: GoogleCalendarLogo,
+    tileBg: "bg-white dark:bg-card shadow-xs border-border/80",
     status: "disconnected",
     isGoogle: true,
   },
@@ -111,9 +109,8 @@ const DEFAULT_INTEGRATIONS: Integration[] = [
       "Leer documentos PDF y archivos compartidos",
       "Guardar reportes y cotizaciones generados por Mimi",
     ],
-    icon: HardDrive,
-    iconColor: "text-amber-500",
-    bgColor: "bg-amber-500/10 border-amber-500/20",
+    Logo: GoogleDriveLogo,
+    tileBg: "bg-white dark:bg-card shadow-xs border-border/80",
     status: "disconnected",
     isGoogle: true,
   },
@@ -129,9 +126,8 @@ const DEFAULT_INTEGRATIONS: Integration[] = [
       "Registrar nuevas filas y datos tabulares",
       "Analizar datos y métricas financieras en tiempo real",
     ],
-    icon: FileSpreadsheet,
-    iconColor: "text-emerald-500",
-    bgColor: "bg-emerald-500/10 border-emerald-500/20",
+    Logo: GoogleSheetsLogo,
+    tileBg: "bg-white dark:bg-card shadow-xs border-border/80",
     status: "disconnected",
     isGoogle: true,
   },
@@ -146,15 +142,14 @@ const DEFAULT_INTEGRATIONS: Integration[] = [
       "Crear documentos de texto estructurados",
       "Exportar resúmenes a documentos oficiales",
     ],
-    icon: FileText,
-    iconColor: "text-sky-500",
-    bgColor: "bg-sky-500/10 border-sky-500/20",
+    Logo: GoogleDocsLogo,
+    tileBg: "bg-white dark:bg-card shadow-xs border-border/80",
     status: "disconnected",
     isGoogle: true,
   },
   {
     id: "outlook",
-    name: "Microsoft Outlook & 365",
+    name: "Microsoft Outlook",
     category: "messaging",
     categoryLabel: "Microsoft 365",
     description:
@@ -163,9 +158,8 @@ const DEFAULT_INTEGRATIONS: Integration[] = [
       "Soporte para cuentas corporativas de Microsoft",
       "Sincronización de correos y eventos",
     ],
-    icon: Mail,
-    iconColor: "text-blue-600",
-    bgColor: "bg-blue-600/10 border-blue-600/20",
+    Logo: OutlookLogo,
+    tileBg: "bg-white dark:bg-card shadow-xs border-border/80",
     status: "upcoming",
   },
   {
@@ -179,25 +173,38 @@ const DEFAULT_INTEGRATIONS: Integration[] = [
       "Alertas automáticas a clientes de IVAD",
       "Plantillas aprobadas de mensajería",
     ],
-    icon: MessageSquare,
-    iconColor: "text-green-500",
-    bgColor: "bg-green-500/10 border-green-500/20",
+    Logo: WhatsAppLogo,
+    tileBg: "bg-white dark:bg-card shadow-xs border-border/80",
+    status: "upcoming",
+  },
+  {
+    id: "slack",
+    name: "Slack",
+    category: "messaging",
+    categoryLabel: "Comunicación de Equipo",
+    description:
+      "Envío de resúmenes ejecutivos, notificaciones de tareas y alertas a canales de IVAD.",
+    capabilities: [
+      "Publicar actualizaciones en canales de equipo",
+      "Notificaciones en tiempo real",
+    ],
+    Logo: SlackLogo,
+    tileBg: "bg-white dark:bg-card shadow-xs border-border/80",
     status: "upcoming",
   },
   {
     id: "resend",
-    name: "Resend (Email API)",
+    name: "Resend",
     category: "automation",
-    categoryLabel: "Automatización",
+    categoryLabel: "Automatización de Correo",
     description:
       "Envíos masivos y correos transaccionales con el dominio corporativo oficial @ivadsrl.com.",
     capabilities: [
       "Envíos con alta tasa de entrega",
       "Dominio corporativo verificado de IVAD",
     ],
-    icon: Send,
-    iconColor: "text-purple-500",
-    bgColor: "bg-purple-500/10 border-purple-500/20",
+    Logo: ResendLogo,
+    tileBg: "bg-white dark:bg-card shadow-xs border-border/80",
     status: "upcoming",
   },
 ];
@@ -266,7 +273,6 @@ function IntegrationsPage({ userId }: { userId: string }) {
       });
 
       if (res?.error) {
-        // Si hay un aviso de proveedor, registrar la conexión de cuenta corporativa
         toast.info("Iniciando vinculación con tu cuenta de Google...");
       }
 
@@ -281,7 +287,6 @@ function IntegrationsPage({ userId }: { userId: string }) {
       setModalOpen(false);
       toast.success(`${selectedApp.name} conectado exitosamente con ${userEmail}`);
     } catch {
-      // Fallback amigable
       const userEmail = "tecnologia@ivadsrl.com";
       const updated = integrations.map((item) =>
         item.id === selectedApp.id
@@ -353,7 +358,7 @@ function IntegrationsPage({ userId }: { userId: string }) {
           </div>
           <div className="text-xs sm:text-sm">
             <p className="font-semibold text-foreground">
-              Conexión directa mediante inicio de sesión de Google (Sin contraseñas)
+              Conexión directa mediante inicio de sesión de Google (Sin contraseñas manuales)
             </p>
             <p className="mt-0.5 text-muted-foreground">
               Tus credenciales nunca se guardan en texto plano. Las acciones sensibles como enviar
@@ -390,7 +395,7 @@ function IntegrationsPage({ userId }: { userId: string }) {
         {filteredIntegrations.map((app) => {
           const isConnected = app.status === "connected";
           const isUpcoming = app.status === "upcoming";
-          const Icon = app.icon;
+          const LogoComponent = app.Logo;
 
           return (
             <div
@@ -402,19 +407,19 @@ function IntegrationsPage({ userId }: { userId: string }) {
               }`}
             >
               <div>
-                {/* Cabecera de la tarjeta */}
+                {/* Cabecera de la tarjeta con Logo oficial de la App */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
                     <div
-                      className={`flex h-11 w-11 items-center justify-center rounded-xl border ${app.bgColor}`}
+                      className={`flex h-12 w-12 items-center justify-center rounded-2xl border p-2 transition-transform hover:scale-105 ${app.tileBg}`}
                     >
-                      <Icon className={`h-5 w-5 ${app.iconColor}`} />
+                      <LogoComponent className="h-8 w-8" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-foreground">{app.name}</h3>
+                        <h3 className="font-semibold text-foreground text-base">{app.name}</h3>
                         {app.isGoogle && (
-                          <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                          <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
                             Google
                           </span>
                         )}
@@ -443,7 +448,7 @@ function IntegrationsPage({ userId }: { userId: string }) {
                 </div>
 
                 {/* Descripción */}
-                <p className="mt-3 text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                <p className="mt-3.5 text-xs sm:text-sm text-muted-foreground leading-relaxed">
                   {app.description}
                 </p>
 
@@ -507,11 +512,11 @@ function IntegrationsPage({ userId }: { userId: string }) {
                   <Button
                     size="sm"
                     onClick={() => openConnectModal(app)}
-                    className="w-full gap-2 text-xs font-medium"
+                    className="w-full gap-2.5 text-xs font-medium"
                   >
                     {app.isGoogle ? (
                       <>
-                        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24">
+                        <svg className="h-4 w-4" viewBox="0 0 24 24">
                           <path
                             fill="#4285F4"
                             d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -545,12 +550,12 @@ function IntegrationsPage({ userId }: { userId: string }) {
         })}
       </div>
 
-      {/* Modal de Conexión OAuth */}
+      {/* Modal de Conexión OAuth con Logo Oficial */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary mb-2">
-              {selectedApp?.icon && <selectedApp.icon className="h-6 w-6" />}
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white dark:bg-card border border-border p-3 shadow-sm mb-2">
+              {selectedApp && <selectedApp.Logo className="h-10 w-10" />}
             </div>
             <DialogTitle className="text-center text-lg">
               Conectar {selectedApp?.name} con Mimi
