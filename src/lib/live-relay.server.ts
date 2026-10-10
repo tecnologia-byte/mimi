@@ -612,7 +612,7 @@ export function bindLiveConnection(
         session: {
           model: config.liveModel,
           instructions: conversationInstructions,
-          audio: { output: { voice: "marin" } }, // voz femenina cálida; acento latino definido en las instrucciones
+          audio: { output: { voice: "nova" } }, // voz femenina cálida; acento latino definido en las instrucciones
           delegation: { type: "client" },
         },
         transport: { type: "webrtc", sdp },
