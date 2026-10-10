@@ -18,6 +18,7 @@ import {
   Wrench,
   Users,
   ShieldCheck,
+  Blocks,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
@@ -54,6 +55,7 @@ const sections = [
   { title: "Plantillas", icon: LayoutTemplate, to: "/plantillas" },
   { title: "Favoritos", icon: Star, to: "/favoritos" },
   { title: "Herramientas", icon: Wrench, to: "/herramientas" },
+  { title: "Integraciones", icon: Blocks, to: "/integraciones" },
   { title: "Milt (agentes)", icon: Users, to: "/milt" },
   { title: "Recordatorios", icon: Bell, to: "/recordatorios" },
   { title: "Memoria", icon: Brain, to: "/memoria" },
