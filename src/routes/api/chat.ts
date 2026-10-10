@@ -70,7 +70,7 @@ export const Route = createFileRoute("/api/chat")({
           return new Response(JSON.stringify({ error: "Sesión inválida" }), { status: 401 });
         }
 
-        let body: { messages?: UIMessage[]; threadId?: string; webSearch?: boolean; agent?: string };
+        let body: { messages?: UIMessage[]; threadId?: string; webSearch?: boolean; agent?: string; voice?: boolean };
         try {
           body = await request.json();
         } catch {
@@ -181,6 +181,9 @@ export const Route = createFileRoute("/api/chat")({
                 .join("\n\n")}`
             : "\n\nLa búsqueda web no devolvió resultados; dilo con honestidad y responde con lo que sabes.";
         }
+        const voiceBlock = body.voice === true
+          ? "\n\n## MODO LLAMADA DE VOZ (prioridad máxima)\nEstás en una llamada telefónica real. Habla como una persona: frases cortas y naturales, máximo 2 o 3 oraciones por turno. NUNCA uses listas, viñetas, numeraciones, títulos, tablas, emojis, asteriscos ni enlaces. Entiende el lenguaje coloquial dominicano y lo que la persona quiere decir aunque lo diga desordenado. Guía paso a paso: da una sola idea o paso a la vez y termina con una pregunta corta para seguir la conversación (por ejemplo: «¿Te lo explico más?»). Usa expresiones naturales como «claro», «mira», «perfecto». Si algo es largo, resume y ofrece seguir."
+          : "";
         const { result } = createResponsesCall(
           request,
           {
@@ -188,7 +191,7 @@ export const Route = createFileRoute("/api/chat")({
             apiKey: ai.apiKey,
             model: ai.model,
             headers: ai.headers,
-            system: MIMI_SYSTEM_PROMPT + agentBlock + knowledgeBlock + reminderPromptBlock() + memoryBlock + webBlock,
+            system: MIMI_SYSTEM_PROMPT + agentBlock + knowledgeBlock + reminderPromptBlock() + memoryBlock + webBlock + voiceBlock,
             tools: { ...(canConsult ? createMiltTools(request.signal) : {}), ...createGmailTools(), ...createReminderTools(supabase, userData.user.id, threadId), ...createMemoryTools(supabase, userData.user.id) },
           },
           modelMessages,
