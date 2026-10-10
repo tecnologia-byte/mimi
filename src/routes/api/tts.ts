@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-const DEFAULT_JESSA_VOICE_ID = "yj30vwTGJxSHezdAGsv9"; // Jessa - Easygoing and Effortless
+// Jessica: voz premade de ElevenLabs (funciona por API en plan gratuito, a diferencia de las voces de la librería como "Jessa").
+const DEFAULT_VOICE_ID = "cgSgspJ2msm6clMCkdW9";
 
 export const Route = createFileRoute("/api/tts")({
   server: {
@@ -17,14 +18,18 @@ export const Route = createFileRoute("/api/tts")({
             return Response.json({ error: "Texto requerido" }, { status: 400 });
           }
 
-          const apiKey =
-            process.env["ELEVENLABS_API_KEY"] ||
-            "sk_dc0ac66ec75a986259875b9bd217345e3562135cc4b7295d";
+          const apiKey = process.env["ELEVENLABS_API_KEY"];
+          if (!apiKey) {
+            return Response.json(
+              { error: "ELEVENLABS_API_KEY no configurada", fallback: true },
+              { status: 503 },
+            );
+          }
 
           const voiceId =
             body.voiceId ||
             process.env["ELEVENLABS_VOICE_ID"] ||
-            DEFAULT_JESSA_VOICE_ID;
+            DEFAULT_VOICE_ID;
 
           const response = await fetch(
             `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,

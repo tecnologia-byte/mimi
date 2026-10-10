@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { Mic, PhoneOff } from "lucide-react";
-import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -155,11 +154,6 @@ export function VoicePanel({ onUserSpeech, reply, busy, onClose }: VoicePanelPro
       .then(async (res) => {
         if (cancelled) return;
         if (!res.ok) {
-          if (res.status === 402) {
-            toast.info(
-              "ElevenLabs: para usar la voz Jessa vía API se requiere saldo ($5) o plan Starter. Usando voz de respaldo.",
-            );
-          }
           fallbackSpeak(text);
           return;
         }
