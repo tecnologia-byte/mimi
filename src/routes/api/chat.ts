@@ -18,6 +18,7 @@ import { createMiltTools } from "@/lib/milt";
 import { createGmailTools } from "@/lib/gmail-tools";
 import { createMemoryTools, memoryPromptBlock } from "@/lib/memory-tools";
 import { createReminderTools, reminderPromptBlock } from "@/lib/reminder-tools";
+import { createExecutiveTools } from "@/lib/executive-tools";
 
 function messageText(message: UIMessage): string {
   return message.parts
@@ -192,7 +193,13 @@ export const Route = createFileRoute("/api/chat")({
             model: ai.model,
             headers: ai.headers,
             system: MIMI_SYSTEM_PROMPT + agentBlock + knowledgeBlock + reminderPromptBlock() + memoryBlock + webBlock + voiceBlock,
-            tools: { ...(canConsult ? createMiltTools(request.signal) : {}), ...createGmailTools(), ...createReminderTools(supabase, userData.user.id, threadId), ...createMemoryTools(supabase, userData.user.id) },
+            tools: { 
+              ...(canConsult ? createMiltTools(request.signal) : {}), 
+              ...(agent === "ejecutiva" || agent === "milt" || canConsult ? createExecutiveTools() : {}),
+              ...createGmailTools(), 
+              ...createReminderTools(supabase, userData.user.id, threadId), 
+              ...createMemoryTools(supabase, userData.user.id) 
+            },
           },
           modelMessages,
         );
