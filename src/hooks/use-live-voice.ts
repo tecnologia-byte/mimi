@@ -20,6 +20,7 @@ export function useLiveVoice({
   const recognitionRef = useRef<any>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const lastReplyId = useRef<string | null>(null);
+  const shouldContinue = useRef<boolean>(false);
 
   // Helper para detener cualquier TTS actual
   const stopAudio = useCallback(() => {
@@ -31,6 +32,96 @@ export function useLiveVoice({
       window.speechSynthesis.cancel();
     }
   }, []);
+
+  const start = useCallback(() => {
+    shouldContinue.current = true;
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setState(s => ({ ...s, status: "idle", error: "Reconocimiento de voz no soportado en tu navegador." }));
+      return;
+    }
+    
+    stopAudio();
+
+    if (recognitionRef.current) {
+      try { recognitionRef.current.abort(); } catch(e) {}
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'es-ES'; // Usar un locale más universal
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      setState(s => ({ ...s, status: "listening", error: null }));
+    };
+
+    recognition.onresult = (event: any) => {
+      const text = event.results[0][0].transcript;
+      if (text.trim() && onUserSpeech) {
+        onUserSpeech(text);
+        setState(s => ({ ...s, status: "processing", error: null }));
+      }
+    };
+
+    recognition.onerror = (event: any) => {
+      if (event.error !== 'no-speech') {
+         setState(s => ({ ...s, status: "idle", error: "Error de conexión de voz. Intenta de nuevo." }));
+         shouldContinue.current = false;
+      } else {
+         // Silencio, reiniciar inmediatamente si debe continuar
+         if (shouldContinue.current && state.status !== 'processing' && state.status !== 'speaking') {
+           try { recognitionRef.current?.start(); } catch(e) {}
+         } else {
+           setState(s => ({ ...s, status: "idle" }));
+         }
+      }
+    };
+
+    recognition.onend = () => {
+      if (shouldContinue.current) {
+        setState(s => {
+          if (s.status === "listening") {
+            // Restart listening if we were listening and it ended
+            setTimeout(() => {
+              if (shouldContinue.current && recognitionRef.current) {
+                try { recognitionRef.current.start(); } catch(e) {}
+              }
+            }, 100);
+            return s; // Keep listening state
+          }
+          return s;
+        });
+      } else {
+        setState(s => s.status === "listening" ? { ...s, status: "idle" } : s);
+      }
+    };
+
+    try {
+      recognition.start();
+      recognitionRef.current = recognition;
+    } catch (e) {
+      console.error("Speech recognition start error", e);
+    }
+  }, [onUserSpeech, stopAudio, state.status]);
+
+  const handleSpeakEnd = useCallback(() => {
+    setState(s => {
+      if (s.status === "speaking") {
+        if (shouldContinue.current) {
+          // Si la llamada sigue activa, reanudar escucha
+          setTimeout(() => {
+            if (shouldContinue.current) {
+              start();
+            }
+          }, 100);
+          return { ...s, status: "listening" };
+        }
+        return { ...s, status: "idle" };
+      }
+      return s;
+    });
+  }, [start]);
 
   useEffect(() => {
     // Si hay una nueva respuesta y no estamos procesando
@@ -55,93 +146,45 @@ export function useLiveVoice({
           const url = URL.createObjectURL(blob);
           if (audioRef.current) {
             audioRef.current.src = url;
-            audioRef.current.onended = () => {
-              setState(s => s.status === "speaking" ? { ...s, status: "idle" } : s);
-            };
+            audioRef.current.onended = handleSpeakEnd;
             audioRef.current.play().catch(e => {
               console.error("Audio play blocked", e);
-              setState(s => s.status === "speaking" ? { ...s, status: "idle" } : s);
+              handleSpeakEnd();
             });
           }
         })
         .catch((e) => {
           console.warn("Fallback to window.speechSynthesis", e);
           if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(textToSpeak);
-            utterance.lang = "es-DO";
-            utterance.onend = () => {
-              setState(s => s.status === "speaking" ? { ...s, status: "idle" } : s);
-            };
+            utterance.lang = "es-ES";
+            utterance.onend = handleSpeakEnd;
+            utterance.onerror = handleSpeakEnd;
             window.speechSynthesis.speak(utterance);
           } else {
-            setState(s => s.status === "speaking" ? { ...s, status: "idle" } : s);
+            handleSpeakEnd();
           }
         });
       }
     }
-  }, [reply, busy, stopAudio]);
+  }, [reply, busy, stopAudio, handleSpeakEnd]);
 
   useEffect(() => {
     if (busy) {
+      if (recognitionRef.current) {
+        try { recognitionRef.current.abort(); } catch(e) {}
+      }
       setState(s => ({ ...s, status: "processing" }));
     } else if (state.status === "processing") {
+      // If we finished processing but there was no reply? Wait for reply to handle speaking.
+      // But if there's no reply, we should go back to listening if shouldContinue
       setState(s => ({ ...s, status: "idle" }));
     }
   }, [busy, state.status]);
 
-  const start = useCallback(() => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      setState(s => ({ ...s, status: "idle", error: "Reconocimiento de voz no soportado en tu navegador." }));
-      return;
-    }
-    
-    stopAudio();
-
-    if (recognitionRef.current) {
-      try { recognitionRef.current.abort(); } catch(e) {}
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'es-DO';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-
-    recognition.onstart = () => {
-      setState(s => ({ ...s, status: "listening", error: null }));
-    };
-
-    recognition.onresult = (event: any) => {
-      const text = event.results[0][0].transcript;
-      if (text.trim() && onUserSpeech) {
-        onUserSpeech(text);
-        setState(s => ({ ...s, status: "processing", error: null }));
-      } else {
-        setState(s => ({ ...s, status: "idle" }));
-      }
-    };
-
-    recognition.onerror = (event: any) => {
-      if (event.error !== 'no-speech') {
-         setState(s => ({ ...s, status: "idle", error: "Error de conexión de voz. Intenta de nuevo." }));
-      } else {
-         setState(s => ({ ...s, status: "idle" }));
-      }
-    };
-
-    recognition.onend = () => {
-      setState(s => s.status === "listening" ? { ...s, status: "idle" } : s);
-    };
-
-    try {
-      recognition.start();
-      recognitionRef.current = recognition;
-    } catch (e) {
-      console.error("Speech recognition start error", e);
-    }
-  }, [onUserSpeech, stopAudio]);
-
   const stop = useCallback(() => {
+    shouldContinue.current = false;
     if (recognitionRef.current) {
       try { recognitionRef.current.abort(); } catch (e) {}
     }
@@ -156,3 +199,4 @@ export function useLiveVoice({
 
   return { ...state, audioRef, start, stop, setMuted };
 }
+
