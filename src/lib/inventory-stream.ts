@@ -4,9 +4,9 @@ import { z } from "zod";
 type ConnectionStatus = 'connected' | 'connecting' | 'offline';
 
 let cachedInventory: any[] = [
-  { id: "PROD-001", nombre: "Vasos plásticos 7oz", stock: 120, limite: 500, prioridad: "Alta" },
-  { id: "PROD-002", nombre: "Platos desechables nº 9", stock: 50, limite: 300, prioridad: "Crítica" },
-  { id: "PROD-003", nombre: "Cubiertos plásticos premium", stock: 85, limite: 200, prioridad: "Media" },
+  { id: "PROD-001", sku: "PROD-001", codigoProducto: "PROD-001", codigoImportacion: null, codigoArancelario: null, detallesSistema: null, nombre: "Vasos plásticos 7oz", stock: 120, limite: 500, prioridad: "Alta" },
+  { id: "PROD-002", sku: "PROD-002", codigoProducto: "PROD-002", codigoImportacion: null, codigoArancelario: null, detallesSistema: null, nombre: "Platos desechables nº 9", stock: 50, limite: 300, prioridad: "Crítica" },
+  { id: "PROD-003", sku: "PROD-003", codigoProducto: "PROD-003", codigoImportacion: null, codigoArancelario: null, detallesSistema: null, nombre: "Cubiertos plásticos premium", stock: 85, limite: 200, prioridad: "Media" },
 ];
 
 let cachedSystemAlerts: any[] = [
@@ -62,11 +62,35 @@ export async function startInventoryStream() {
               const payload = JSON.parse(dataStr);
               
               if (payload.productos || payload.inventory || payload.lowStock) {
-                cachedInventory = payload.productos || payload.inventory || payload.lowStock;
+                const rawInventory = payload.productos || payload.inventory || payload.lowStock;
+                cachedInventory = rawInventory.map((item: any) => ({
+                  ...item,
+                  codigoImportacion: item.codigoImportacion ?? item.importCode ?? null,
+                  codigoArancelario: item.codigoArancelario ?? item.tariffCode ?? null,
+                  codigoProducto: item.codigoProducto ?? item.sku ?? item.id ?? null,
+                  sku: item.sku ?? item.codigoProducto ?? item.id ?? null,
+                  detallesSistema: item.detallesSistema ?? item.systemDetails ?? null
+                }));
               } else if (payload.type === 'inventory_update' && payload.data) {
-                cachedInventory = payload.data;
+                const rawInventory = payload.data;
+                cachedInventory = rawInventory.map((item: any) => ({
+                  ...item,
+                  codigoImportacion: item.codigoImportacion ?? item.importCode ?? null,
+                  codigoArancelario: item.codigoArancelario ?? item.tariffCode ?? null,
+                  codigoProducto: item.codigoProducto ?? item.sku ?? item.id ?? null,
+                  sku: item.sku ?? item.codigoProducto ?? item.id ?? null,
+                  detallesSistema: item.detallesSistema ?? item.systemDetails ?? null
+                }));
               } else if (Array.isArray(payload) && payload.length > 0 && payload[0].stock !== undefined) {
-                cachedInventory = payload;
+                const rawInventory = payload;
+                cachedInventory = rawInventory.map((item: any) => ({
+                  ...item,
+                  codigoImportacion: item.codigoImportacion ?? item.importCode ?? null,
+                  codigoArancelario: item.codigoArancelario ?? item.tariffCode ?? null,
+                  codigoProducto: item.codigoProducto ?? item.sku ?? item.id ?? null,
+                  sku: item.sku ?? item.codigoProducto ?? item.id ?? null,
+                  detallesSistema: item.detallesSistema ?? item.systemDetails ?? null
+                }));
               }
               
               if (payload.alertas || payload.alerts) {

@@ -185,6 +185,8 @@ export const Route = createFileRoute("/api/chat")({
         const voiceBlock = body.voice === true
           ? "\n\n## MODO LLAMADA DE VOZ (prioridad máxima)\nEstás en una llamada telefónica real. Habla como una persona: frases cortas y naturales, máximo 2 o 3 oraciones por turno. NUNCA uses listas, viñetas, numeraciones, títulos, tablas, emojis, asteriscos ni enlaces. Entiende el lenguaje coloquial dominicano y lo que la persona quiere decir aunque lo diga desordenado. Guía paso a paso: da una sola idea o paso a la vez y termina con una pregunta corta para seguir la conversación (por ejemplo: «¿Te lo explico más?»). Usa expresiones naturales como «claro», «mira», «perfecto». Si algo es largo, resume y ofrece seguir."
           : "";
+        const antiHallucinationBlock = "\n\n## REGLA MANDATORIA ANTI-ALUCINACIÓN (Inventario y Productos)\nLa IA (Mimi Ejecutiva, Logística, Contadora, Milt, Mimi general) tiene TERMINANTEMENTE PROHIBIDO inventar o asumir productos, nombres, existencias, códigos de importación (DGA/partida arancelaria/SKU) o precios.\n- Solo puedes mencionar productos y códigos de importación que provengan explícitamente de la herramienta del sistema / stream en tiempo real.\n- Si un producto no existe en los datos del sistema o si el usuario pregunta por un artículo no registrado, debes responder con total transparencia: 'Este producto no figura en el registro oficial del sistema en este momento', sin intentar adivinar ni inventar datos.";
+
         const { result } = createResponsesCall(
           request,
           {
@@ -192,9 +194,10 @@ export const Route = createFileRoute("/api/chat")({
             apiKey: ai.apiKey,
             model: ai.model,
             headers: ai.headers,
-            system: MIMI_SYSTEM_PROMPT + agentBlock + knowledgeBlock + reminderPromptBlock() + memoryBlock + webBlock + voiceBlock,
+            system: MIMI_SYSTEM_PROMPT + agentBlock + antiHallucinationBlock + knowledgeBlock + reminderPromptBlock() + memoryBlock + webBlock + voiceBlock,
             tools: { 
               ...(canConsult ? createMiltTools(request.signal) : {}), 
+
               ...(agent === "ejecutiva" || agent === "milt" || canConsult ? createExecutiveTools() : {}),
               ...createGmailTools(), 
               ...createReminderTools(supabase, userData.user.id, threadId), 
