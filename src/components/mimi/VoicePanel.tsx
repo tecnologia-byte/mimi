@@ -20,13 +20,15 @@ interface VoicePanelProps {
   onUserSpeech?: (text: string) => void;
   reply?: { id: string; text: string } | null;
   busy?: boolean;
+  onSpeakStart?: () => void;
 }
 
-export function VoicePanel({ onCallStateChange, onClose, onUserSpeech, reply, busy }: VoicePanelProps) {
+export function VoicePanel({ onCallStateChange, onClose, onUserSpeech, reply, busy, onSpeakStart }: VoicePanelProps) {
   const { status, error, audioRef, start, stop, setMuted, muted } = useLiveVoice({
     onUserSpeech,
     reply,
     busy,
+    onSpeakStart,
     onEvent: (e) => {
       // Eventos de voz
     }

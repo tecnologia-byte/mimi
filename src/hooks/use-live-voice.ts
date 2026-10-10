@@ -9,8 +9,10 @@ export type LiveState = {
 export function useLiveVoice({
   onUserSpeech,
   reply,
-  busy
+  busy,
+  onSpeakStart
 }: {
+  onSpeakStart?: (() => void) | undefined;
   onUserSpeech?: ((text: string) => void) | undefined;
   reply?: { id: string; text: string } | null | undefined;
   busy?: boolean | undefined;
@@ -118,6 +120,7 @@ export function useLiveVoice({
   }, [onUserSpeech, stopAudio, state.status]);
 
   const handleSpeakEnd = useCallback(() => {
+    onSpeakStart?.();
     setState(s => {
       if (s.status === "speaking") {
         if (shouldContinue.current) {
@@ -133,7 +136,7 @@ export function useLiveVoice({
       }
       return s;
     });
-  }, [start]);
+  }, [start, onSpeakStart]);
 
   useEffect(() => {
     if (busy) {
@@ -165,6 +168,7 @@ export function useLiveVoice({
             if (audioRef.current) {
               audioRef.current.src = url;
               audioRef.current.onended = handleSpeakEnd;
+              audioRef.current.onplaying = () => onSpeakStart?.();
               audioRef.current.play().catch(e => {
                 console.error("Audio play blocked", e);
                 handleSpeakEnd();
@@ -185,6 +189,7 @@ export function useLiveVoice({
                 utterance.voice = esVoice;
               }
 
+              utterance.onstart = () => onSpeakStart?.();
               utterance.onend = handleSpeakEnd;
               utterance.onerror = (err) => {
                 console.error("SpeechSynthesis error:", err);
@@ -214,7 +219,7 @@ export function useLiveVoice({
         });
       }
     }
-  }, [busy, reply, stopAudio, handleSpeakEnd, start]);
+  }, [busy, reply, stopAudio, handleSpeakEnd, start, onSpeakStart]);
 
   const stop = useCallback(() => {
     shouldContinue.current = false;
