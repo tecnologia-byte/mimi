@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Mic, PhoneOff } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -93,12 +94,30 @@ export function VoicePanel({ onUserSpeech, reply, busy, onClose }: VoicePanelPro
     rec.start();
   };
 
-  // Leer la respuesta de Mimi y volver a escuchar.
-  useEffect(() => {
-    if (!active || busy || !reply || reply.id === spokenId.current) return;
-    spokenId.current = reply.id;
-    const text = clean(reply.text);
-    if (!text) return listen();
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioUrlRef = useRef<string | null>(null);
+
+  const stopAllAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
+    if (audioUrlRef.current) {
+      URL.revokeObjectURL(audioUrlRef.current);
+      audioUrlRef.current = null;
+    }
+    if ("speechSynthesis" in window) {
+      speechSynthesis.cancel();
+    }
+  };
+
+  const fallbackSpeak = (text: string) => {
+    if (!("speechSynthesis" in window)) {
+      setSpeaking(false);
+      if (activeRef.current) listen();
+      return;
+    }
     const u = new SpeechSynthesisUtterance(text);
     u.lang = "es-ES";
     const voices = speechSynthesis.getVoices().filter((v) => v.lang.startsWith("es"));
@@ -108,15 +127,79 @@ export function VoicePanel({ onUserSpeech, reply, busy, onClose }: VoicePanelPro
       setSpeaking(false);
       if (activeRef.current) listen();
     };
+    u.onerror = () => {
+      setSpeaking(false);
+      if (activeRef.current) listen();
+    };
     setSpeaking(true);
     speechSynthesis.cancel();
     speechSynthesis.speak(u);
+  };
+
+  // Leer la respuesta de Mimi con ElevenLabs (Jessa) y volver a escuchar.
+  useEffect(() => {
+    if (!active || busy || !reply || reply.id === spokenId.current) return;
+    spokenId.current = reply.id;
+    const text = clean(reply.text);
+    if (!text) return listen();
+
+    stopAllAudio();
+    setSpeaking(true);
+    let cancelled = false;
+
+    fetch("/api/tts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+    })
+      .then(async (res) => {
+        if (cancelled) return;
+        if (!res.ok) {
+          if (res.status === 402) {
+            toast.info(
+              "ElevenLabs: para usar la voz Jessa vía API se requiere saldo ($5) o plan Starter. Usando voz de respaldo.",
+            );
+          }
+          fallbackSpeak(text);
+          return;
+        }
+
+        const blob = await res.blob();
+        if (cancelled) return;
+        const url = URL.createObjectURL(blob);
+        audioUrlRef.current = url;
+        const audio = new Audio(url);
+        audioRef.current = audio;
+
+        audio.onended = () => {
+          setSpeaking(false);
+          stopAllAudio();
+          if (activeRef.current) listen();
+        };
+
+        audio.onerror = () => {
+          stopAllAudio();
+          fallbackSpeak(text);
+        };
+
+        audio.play().catch(() => {
+          fallbackSpeak(text);
+        });
+      })
+      .catch(() => {
+        if (!cancelled) fallbackSpeak(text);
+      });
+
+    return () => {
+      cancelled = true;
+      stopAllAudio();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reply, busy, active]);
 
   useEffect(() => () => {
     recRef.current?.stop();
-    speechSynthesis.cancel();
+    stopAllAudio();
   }, []);
 
   const start = () => {
@@ -127,7 +210,7 @@ export function VoicePanel({ onUserSpeech, reply, busy, onClose }: VoicePanelPro
   const hangUp = () => {
     setActive(false);
     recRef.current?.stop();
-    speechSynthesis.cancel();
+    stopAllAudio();
     setSpeaking(false);
     setListening(false);
   };

@@ -23,6 +23,7 @@ import { Route as PlantillasRouteImport } from './routes/plantillas'
 import { Route as RecordatoriosRouteImport } from './routes/recordatorios'
 import { Route as SolicitarAccesoRouteImport } from './routes/solicitar-acceso'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ChatThreadIdRouteImport } from './routes/chat.$threadId'
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
 
@@ -96,6 +97,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTtsRoute = ApiTtsRouteImport.update({
+  id: '/api/tts',
+  path: '/api/tts',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ChatThreadIdRoute = ChatThreadIdRouteImport.update({
   id: '/chat/$threadId',
   path: '/chat/$threadId',
@@ -122,6 +128,7 @@ export interface FileRoutesByFullPath {
   '/recordatorios': typeof RecordatoriosRoute
   '/solicitar-acceso': typeof SolicitarAccesoRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/tts': typeof ApiTtsRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
 }
@@ -140,6 +147,7 @@ export interface FileRoutesByTo {
   '/recordatorios': typeof RecordatoriosRoute
   '/solicitar-acceso': typeof SolicitarAccesoRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/tts': typeof ApiTtsRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
 }
@@ -159,6 +167,7 @@ export interface FileRoutesById {
   '/recordatorios': typeof RecordatoriosRoute
   '/solicitar-acceso': typeof SolicitarAccesoRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/tts': typeof ApiTtsRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
 }
@@ -179,6 +188,7 @@ export interface FileRouteTypes {
     | '/recordatorios'
     | '/solicitar-acceso'
     | '/api/chat'
+    | '/api/tts'
     | '/chat/$threadId'
     | '/api/public/hooks/reminders'
   fileRoutesByTo: FileRoutesByTo
@@ -197,6 +207,7 @@ export interface FileRouteTypes {
     | '/recordatorios'
     | '/solicitar-acceso'
     | '/api/chat'
+    | '/api/tts'
     | '/chat/$threadId'
     | '/api/public/hooks/reminders'
   id:
@@ -215,6 +226,7 @@ export interface FileRouteTypes {
     | '/recordatorios'
     | '/solicitar-acceso'
     | '/api/chat'
+    | '/api/tts'
     | '/chat/$threadId'
     | '/api/public/hooks/reminders'
   fileRoutesById: FileRoutesById
@@ -234,6 +246,7 @@ export interface RootRouteChildren {
   RecordatoriosRoute: typeof RecordatoriosRoute
   SolicitarAccesoRoute: typeof SolicitarAccesoRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiTtsRoute: typeof ApiTtsRoute
   ChatThreadIdRoute: typeof ChatThreadIdRoute
   ApiPublicHooksRemindersRoute: typeof ApiPublicHooksRemindersRoute
 }
@@ -338,6 +351,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/tts': {
+      id: '/api/tts'
+      path: '/api/tts'
+      fullPath: '/api/tts'
+      preLoaderRoute: typeof ApiTtsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/chat/$threadId': {
       id: '/chat/$threadId'
       path: '/chat/$threadId'
@@ -370,6 +390,7 @@ const rootRouteChildren: RootRouteChildren = {
   RecordatoriosRoute: RecordatoriosRoute,
   SolicitarAccesoRoute: SolicitarAccesoRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiTtsRoute: ApiTtsRoute,
   ChatThreadIdRoute: ChatThreadIdRoute,
   ApiPublicHooksRemindersRoute: ApiPublicHooksRemindersRoute,
 }
