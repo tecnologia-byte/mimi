@@ -130,16 +130,103 @@ if (typeof globalThis !== "undefined" && !(globalThis as any).inventoryStreamSta
   startInventoryStream();
 }
 
-export function getInventoryData() {
+export async function directFetchIfEmpty() {
+  if (cachedInventory.length > 0) return;
+
+  try {
+    const response = await fetch(eventSourceUrl, {
+      headers: { "Accept": "text/event-stream" },
+      signal: AbortSignal.timeout(8000)
+    });
+
+    if (!response.ok) {
+      cachedSystemAlerts = [{ mensaje: `Error HTTP ${response.status}: El endpoint puede estar caído.` }];
+      connectionStatus = 'offline';
+      return;
+    }
+
+    const contentType = response.headers.get("content-type") || "";
+    if (contentType.includes("text/html")) {
+      const text = await response.clone().text();
+      if (text.includes("Cloudflare") || response.status === 502 || response.status === 530) {
+        cachedSystemAlerts = [{ mensaje: "Error 530/502: El túnel de Cloudflare expiró o está caído del lado del usuario. Por favor, reinicia el túnel." }];
+        connectionStatus = 'offline';
+        return;
+      }
+    }
+
+    if (!response.body) return;
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    const timeout = Date.now() + 5000;
+    while (Date.now() < timeout) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split(/\r?\n/);
+      buffer = lines.pop() || "";
+
+      let found = false;
+      for (const line of lines) {
+        if (line.startsWith("data: ")) {
+          const dataStr = line.slice(6).trim();
+          if (!dataStr) continue;
+          try {
+            const payload = JSON.parse(dataStr);
+            if (payload.productos || payload.inventory || payload.lowStock) {
+              const rawInventory = payload.productos || payload.inventory || payload.lowStock;
+              cachedInventory = rawInventory.map((item: any) => ({
+                ...item,
+                codigoImportacion: item.codigoImportacion ?? item.importCode ?? null,
+                codigoArancelario: item.codigoArancelario ?? item.tariffCode ?? null,
+                codigoProducto: item.codigoProducto ?? item.sku ?? item.id ?? null,
+                sku: item.sku ?? item.codigoProducto ?? item.id ?? null,
+                detallesSistema: item.detallesSistema ?? item.systemDetails ?? null
+              }));
+              found = true;
+            } else if (Array.isArray(payload) && payload.length > 0) {
+              cachedInventory = payload;
+              found = true;
+            }
+            if (payload.alertas || payload.alerts) {
+              cachedSystemAlerts = payload.alertas || payload.alerts;
+              found = true;
+            }
+          } catch (e) {}
+        }
+      }
+      if (found) {
+        connectionStatus = 'connected';
+        lastUpdate = new Date().toISOString();
+        reader.cancel();
+        return;
+      }
+    }
+    reader.cancel();
+  } catch (error: any) {
+    cachedSystemAlerts = [{ mensaje: `Error de conexión: ${error.message}. ¿Túnel cerrado?` }];
+    connectionStatus = 'offline';
+  }
+}
+
+export async function getInventoryData() {
+  await directFetchIfEmpty();
+  const alert = cachedSystemAlerts.find(a => a.mensaje && a.mensaje.includes("Error"));
+  const offlineMsg = alert ? alert.mensaje : "Datos en caché (estado: offline)";
   return {
-    mensaje: connectionStatus === 'connected' ? "Inventario crítico en tiempo real" : "Datos en caché (estado: offline)",
+    mensaje: connectionStatus === 'connected' ? "Inventario crítico en tiempo real" : offlineMsg,
     estadoConexion: connectionStatus,
     productos: cachedInventory,
     timestamp: lastUpdate
   };
 }
 
-export function getSystemAlertsData() {
+export async function getSystemAlertsData() {
+  await directFetchIfEmpty();
   return {
     estadoConexion: connectionStatus,
     alertas: cachedSystemAlerts,

@@ -10,8 +10,8 @@ export function createExecutiveTools() {
         query: z.string().describe("La consulta específica sobre el sistema o inventario, por ejemplo 'catálogo de productos', 'existencias totales', 'códigos de importación', 'alertas', etc.")
       }),
       execute: async () => {
-        const inventory = getInventoryData();
-        const alerts = getSystemAlertsData();
+        const inventory = await getInventoryData();
+        const alerts = await getSystemAlertsData();
         return {
           inventario: inventory,
           alertas: alerts,
@@ -23,7 +23,10 @@ export function createExecutiveTools() {
       description: "Consulta los productos próximos a agotarse en tiempo real y el stock crítico. Si los datos incluyen 'código de importación', 'partida arancelaria' o 'SKU', asegúrate de formatearlos y entregarlos explícitamente en tu respuesta.",
       parameters: z.object({}),
       execute: async () => {
-        const data = getInventoryData();
+        const data = await getInventoryData();
+        if (data.estadoConexion === 'offline' && (!data.productos || data.productos.length === 0)) {
+          return `No se pudo conectar al sistema en tiempo real. Estado: ${data.estadoConexion}. Mensaje: ${data.mensaje}`;
+        }
         if (!data.productos || data.productos.length === 0 || data.productos.some((p: any) => p.id === 'PROD-001')) {
           return "El sistema en tiempo real no reporta productos críticos en este momento (o el stream está a la espera de nuevos eventos del sistema)";
         }
@@ -34,7 +37,10 @@ export function createExecutiveTools() {
       description: "Consulta los productos próximos a agotarse en tiempo real y el stock crítico. Si los datos incluyen 'código de importación', 'partida arancelaria' o 'SKU', asegúrate de formatearlos y entregarlos explícitamente en tu respuesta.",
       parameters: z.object({}),
       execute: async () => {
-        const data = getInventoryData();
+        const data = await getInventoryData();
+        if (data.estadoConexion === 'offline' && (!data.productos || data.productos.length === 0)) {
+          return `No se pudo conectar al sistema en tiempo real. Estado: ${data.estadoConexion}. Mensaje: ${data.mensaje}`;
+        }
         if (!data.productos || data.productos.length === 0 || data.productos.some((p: any) => p.id === 'PROD-001')) {
           return "El sistema en tiempo real no reporta productos críticos en este momento (o el stream está a la espera de nuevos eventos del sistema)";
         }
@@ -45,7 +51,7 @@ export function createExecutiveTools() {
       description: "Consulta las alertas activas del sistema (retrasos de proveedores, problemas de despacho, etc.) consumiendo el stream en tiempo real.",
       parameters: z.object({}),
       execute: async () => {
-        const data = getSystemAlertsData();
+        const data = await getSystemAlertsData();
         if (!data.alertas || data.alertas.length === 0 || data.alertas.some((a: any) => a.mensaje && a.mensaje.includes('servilletas'))) {
           return "El sistema en tiempo real no reporta alertas críticas en este momento (o el stream está a la espera de nuevos eventos del sistema)";
         }
