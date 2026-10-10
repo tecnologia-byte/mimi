@@ -11,10 +11,10 @@ export function useLiveVoice({
   reply,
   busy
 }: {
-  onUserSpeech?: (text: string) => void;
-  reply?: { id: string; text: string } | null;
-  busy?: boolean;
-  onEvent?: (event: any) => void;
+  onUserSpeech?: ((text: string) => void) | undefined;
+  reply?: { id: string; text: string } | null | undefined;
+  busy?: boolean | undefined;
+  onEvent?: ((event: any) => void) | undefined;
 }) {
   const [state, setState] = useState<LiveState>({ status: "idle", error: null, muted: false });
   const recognitionRef = useRef<any>(null);
