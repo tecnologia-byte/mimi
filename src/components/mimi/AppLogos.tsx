@@ -4,142 +4,82 @@ interface LogoProps {
   className?: string;
 }
 
-/** Logo oficial de Gmail (Google Workspace) */
-export function GmailLogo({ className = "h-7 w-7" }: LogoProps) {
+/** Logo oficial de Gmail (PNG transparente extraído del archivo proporcionado por el usuario) */
+export function GmailLogo({ className = "h-8 w-8" }: LogoProps) {
   return (
-    <svg viewBox="0 0 48 48" className={className}>
-      <path
-        fill="#4285F4"
-        d="M45 16.2l-5 2.75-5 4.75L35 40h7c1.657 0 3-1.343 3-3V16.2z"
-        opacity="0"
-      />
-      {/* Columna izquierda azul */}
-      <path
-        fill="#4285F4"
-        d="M7 38h5V22l-7-5.25V36c0 1.1.9 2 2 2z"
-      />
-      {/* Columna derecha verde */}
-      <path
-        fill="#34A853"
-        d="M36 38h5c1.1 0 2-.9 2-2V16.75L36 22v16z"
-      />
-      {/* Pliegue central rojo */}
-      <path
-        fill="#EA4335"
-        d="M36 14.5L24 23.5 12 14.5V10c0-1.6 1.9-2.5 3.1-1.4L24 15l8.9-6.4c1.2-1.1 3.1-.2 3.1 1.4v4.5z"
-      />
-      {/* Esquina superior izquierda amarilla */}
-      <path
-        fill="#FBBC04"
-        d="M5 16.75L12 22V14.5L6.9 10.7C5.7 9.8 4 10.6 4 12v4c0 .3.1.6.3.8l.7-.05z"
-      />
-      {/* Esquina superior derecha roja oscura */}
-      <path
-        fill="#C5221F"
-        d="M43 16.75L36 22V14.5l5.1-3.8c1.2-.9 2.9-.1 2.9 1.3v4c0 .3-.1.6-.3.8l-.7-.05z"
-      />
-    </svg>
+    <img
+      src="/logos/gmail.png"
+      alt="Gmail"
+      className={`${className} object-contain`}
+      loading="lazy"
+    />
   );
 }
 
-/** Logo oficial de Google Calendar */
-export function GoogleCalendarLogo({ className = "h-7 w-7" }: LogoProps) {
+/** Logo oficial de Google Calendar (PNG transparente extraído del archivo proporcionado por el usuario) */
+export function GoogleCalendarLogo({ className = "h-8 w-8" }: LogoProps) {
   return (
-    <svg viewBox="0 0 48 48" className={className}>
-      {/* Marco de fondo con esquinas de colores Google */}
-      <rect width="36" height="36" x="6" y="6" rx="6" fill="#fff" />
-      <path fill="#4285F4" d="M12 6h24a6 6 0 0 1 6 6v3H6v-3a6 6 0 0 1 6-6z" />
-      <path fill="#EA4335" d="M36 6h6a6 6 0 0 1 6 6v3h-12V6z" />
-      <path fill="#FBBC04" d="M6 33h12v9H12a6 6 0 0 1-6-6v-3z" />
-      <path fill="#34A853" d="M30 33h12v3a6 6 0 0 1-6 6h-6v-9z" />
-      <rect x="10" y="15" width="28" height="18" fill="#fff" />
-      {/* Número 31 corporativo en azul Google */}
-      <text
-        x="24"
-        y="30"
-        fontFamily="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-        fontSize="17"
-        fontWeight="bold"
-        fill="#1A73E8"
-        textAnchor="middle"
-      >
-        31
-      </text>
-    </svg>
+    <img
+      src="/logos/google-calendar.png"
+      alt="Google Calendar"
+      className={`${className} object-contain`}
+      loading="lazy"
+    />
   );
 }
 
-/** Logo oficial de Google Drive */
-export function GoogleDriveLogo({ className = "h-7 w-7" }: LogoProps) {
+/** Logo oficial de Google Drive (PNG transparente extraído del archivo proporcionado por el usuario) */
+export function GoogleDriveLogo({ className = "h-8 w-8" }: LogoProps) {
   return (
-    <svg viewBox="0 0 48 48" className={className}>
-      {/* Franja superior amarilla */}
-      <path fill="#FFC107" d="M17 7h14l11 19H28L17 7z" />
-      {/* Franja izquierda verde */}
-      <path fill="#00AC47" d="M6 26l11-19 11 19-6 10-16-10z" />
-      {/* Franja inferior azul */}
-      <path fill="#2684FC" d="M17 41h19a6 6 0 0 0 5-3l5-9H28l-11 12z" />
-    </svg>
+    <img
+      src="/logos/google-drive.png"
+      alt="Google Drive"
+      className={`${className} object-contain`}
+      loading="lazy"
+    />
   );
 }
 
-/** Logo oficial de Google Sheets */
-export function GoogleSheetsLogo({ className = "h-7 w-7" }: LogoProps) {
+/** Logo oficial de Google Sheets (PNG transparente recortado y limpiado del archivo del usuario) */
+export function GoogleSheetsLogo({ className = "h-8 w-8" }: LogoProps) {
   return (
-    <svg viewBox="0 0 48 48" className={className}>
-      {/* Hoja verde con esquina doblada */}
-      <path
-        fill="#0F9D58"
-        d="M36 42H12a4 4 0 0 1-4-4V10a4 4 0 0 1 4-4h18l10 10v22a4 4 0 0 1-4 4z"
-      />
-      <path fill="#87CEAB" d="M30 6l10 10H30V6z" opacity="0.6" />
-      {/* Cuadrícula de hoja de cálculo en blanco */}
-      <rect x="15" y="20" width="18" height="16" rx="1.5" fill="#fff" fillOpacity="0.2" />
-      <path
-        fill="#fff"
-        d="M16 21h16v14H16V21zm2 2v2.5h5V23h-5zm7 0v2.5h5V23h-5zm-7 4.5v2.5h5v-2.5h-5zm7 0v2.5h5v-2.5h-5zm-7 4.5v2.5h5V32h-5zm7 0v2.5h5V32h-5z"
-      />
-    </svg>
+    <img
+      src="/logos/google-sheets.png"
+      alt="Google Sheets"
+      className={`${className} object-contain`}
+      loading="lazy"
+    />
   );
 }
 
-/** Logo oficial de Google Docs */
-export function GoogleDocsLogo({ className = "h-7 w-7" }: LogoProps) {
+/** Logo oficial de Google Docs (PNG transparente oficial) */
+export function GoogleDocsLogo({ className = "h-8 w-8" }: LogoProps) {
   return (
-    <svg viewBox="0 0 48 48" className={className}>
-      {/* Hoja azul con esquina doblada */}
-      <path
-        fill="#4285F4"
-        d="M36 42H12a4 4 0 0 1-4-4V10a4 4 0 0 1 4-4h18l10 10v22a4 4 0 0 1-4 4z"
-      />
-      <path fill="#A1C2FA" d="M30 6l10 10H30V6z" opacity="0.6" />
-      {/* Líneas de texto del documento en blanco */}
-      <rect x="16" y="21" width="16" height="2.5" rx="1.25" fill="#fff" />
-      <rect x="16" y="26.5" width="16" height="2.5" rx="1.25" fill="#fff" />
-      <rect x="16" y="32" width="10" height="2.5" rx="1.25" fill="#fff" />
-    </svg>
+    <img
+      src="/logos/google-docs.png"
+      alt="Google Docs"
+      className={`${className} object-contain`}
+      loading="lazy"
+    />
   );
 }
 
-/** Logo oficial de Microsoft Outlook */
-export function OutlookLogo({ className = "h-7 w-7" }: LogoProps) {
+/** Logo oficial de Microsoft Outlook (PNG transparente extraído del archivo proporcionado por el usuario) */
+export function OutlookLogo({ className = "h-8 w-8" }: LogoProps) {
   return (
-    <svg viewBox="0 0 48 48" className={className}>
-      {/* Fondo de sobre corporativo azul Microsoft */}
-      <path fill="#0078D4" d="M28 8h12a4 4 0 0 1 4 4v24a4 4 0 0 1-4 4H28V8z" />
-      <path fill="#106EBE" d="M6 14l22-6v32L6 34V14z" />
-      <path fill="#005A9E" d="M28 20l16-6v20l-16-6V20z" opacity="0.4" />
-      {/* Círculo con la letra O */}
-      <circle cx="17" cy="24" r="8" fill="#fff" />
-      <circle cx="17" cy="24" r="4.5" fill="#0078D4" />
-    </svg>
+    <img
+      src="/logos/outlook.png"
+      alt="Microsoft Outlook"
+      className={`${className} object-contain`}
+      loading="lazy"
+    />
   );
 }
 
 /** Logo oficial de WhatsApp Business */
-export function WhatsAppLogo({ className = "h-7 w-7" }: LogoProps) {
+export function WhatsAppLogo({ className = "h-8 w-8" }: LogoProps) {
   return (
-    <svg viewBox="0 0 48 48" className={className}>
+    <svg viewBox="0 0 48 48" className={`${className} object-contain`}>
       <circle cx="24" cy="24" r="21" fill="#25D366" />
       <path
         fill="#fff"
@@ -150,9 +90,9 @@ export function WhatsAppLogo({ className = "h-7 w-7" }: LogoProps) {
 }
 
 /** Logo oficial de Resend */
-export function ResendLogo({ className = "h-7 w-7" }: LogoProps) {
+export function ResendLogo({ className = "h-8 w-8" }: LogoProps) {
   return (
-    <svg viewBox="0 0 48 48" className={className}>
+    <svg viewBox="0 0 48 48" className={`${className} object-contain`}>
       <rect width="44" height="44" x="2" y="2" rx="10" fill="#000" />
       <path
         fill="#fff"
@@ -163,9 +103,9 @@ export function ResendLogo({ className = "h-7 w-7" }: LogoProps) {
 }
 
 /** Logo oficial de Slack */
-export function SlackLogo({ className = "h-7 w-7" }: LogoProps) {
+export function SlackLogo({ className = "h-8 w-8" }: LogoProps) {
   return (
-    <svg viewBox="0 0 48 48" className={className}>
+    <svg viewBox="0 0 48 48" className={`${className} object-contain`}>
       <path
         fill="#E01E5A"
         d="M12.5 20.5a3.5 3.5 0 0 1-3.5-3.5V8.5a3.5 3.5 0 0 1 7 0V17a3.5 3.5 0 0 1-3.5 3.5zm-4 3.5a3.5 3.5 0 0 1 3.5-3.5H20a3.5 3.5 0 0 1 0 7H12a3.5 3.5 0 0 1-3.5-3.5z"
