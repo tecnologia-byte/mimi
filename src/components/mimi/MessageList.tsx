@@ -52,7 +52,13 @@ function SourceFavicon({ hostname }: { hostname: string }) {
 }
 
 function cleanMarkdownText(raw: string): string {
-  return raw.replace(/<!--sources:[\s\S]*?-->/g, "").trim();
+  let cleaned = raw.replace(/<!--sources:[\s\S]*?-->/g, "");
+  // Remueve bloques de "Fuentes consultadas" o "Referencias" escritas directamente en el texto
+  cleaned = cleaned.replace(
+    /(?:^|\n+)(?:[#*_\s]*)(?:Fuentes(?: consultadas)?|Referencias|Enlaces consultados)(?:[#*_\s:]*)\n+(?:(?:\s*[-*•]|\s*\d+\.)\s*(?:\[[^\]]+\]\([^)]+\)|https?:\/\/\S+|[^\n]+)\n*)+/gi,
+    "\n\n"
+  );
+  return cleaned.trim();
 }
 
 function extractSources(message: UIMessage): SourceItem[] {

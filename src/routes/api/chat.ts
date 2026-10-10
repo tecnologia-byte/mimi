@@ -116,10 +116,11 @@ export const Route = createFileRoute("/api/chat")({
               console.error("No se pudo guardar el mensaje del usuario:", insertError);
             }
             if (thread.title === "Nuevo chat") {
-              const title = await generateChatTitle(messageText(lastUser));
-              await supabase.from("threads").update({ title, updated_at: new Date().toISOString() }).eq("id", threadId);
+              void generateChatTitle(messageText(lastUser)).then(async (title) => {
+                await supabase.from("threads").update({ title, updated_at: new Date().toISOString() }).eq("id", threadId);
+              });
             } else {
-              await supabase.from("threads").update({ updated_at: new Date().toISOString() }).eq("id", threadId);
+              void supabase.from("threads").update({ updated_at: new Date().toISOString() }).eq("id", threadId);
             }
           }
         }
@@ -175,7 +176,7 @@ export const Route = createFileRoute("/api/chat")({
           const userQuery = messageText(lastUser).split("--- Documento:")[0].trim();
           webResults = await searchWeb(userQuery || messageText(lastUser));
           webBlock = webResults.length
-            ? `\n\n## Búsqueda web ACTIVADA (Resultados reales y actuales)\nAcabas de buscar en internet y estos son resultados reales y actuales. NUNCA digas que no tienes acceso a internet o a datos en tiempo real. Responde directamente con la información de estos resultados (es válido para la empresa: tasas, precios, noticias, leyes, proveedores). Cita cada dato con el número entre corchetes, por ejemplo [1]. No inventes fuentes.\n\n${webResults
+            ? `\n\n## Búsqueda web ACTIVADA (Resultados reales y actuales)\nAcabas de buscar en internet y estos son resultados reales y actuales. NUNCA digas que no tienes acceso a internet o a datos en tiempo real. Responde directamente con la información de estos resultados (es válido para la empresa: tasas, precios, noticias, leyes, proveedores). No inventes fuentes.\n\nREGLA ESTRICTA DE FUENTES: NUNCA escribas una lista de enlaces, URLs ni encabezados de "Fuentes consultadas" en tu texto (ni al principio ni al final). La plataforma web muestra automáticamente las tarjetas con enlaces e iconos al final del mensaje. Responde directamente el contenido de forma limpia, clara y estructurada.\n\n${webResults
                 .map((r, i) => `[${i + 1}] ${r.title}\n${r.url}\n${r.snippet}`)
                 .join("\n\n")}`
             : "\n\nLa búsqueda web no devolvió resultados; dilo con honestidad y responde con lo que sabes.";

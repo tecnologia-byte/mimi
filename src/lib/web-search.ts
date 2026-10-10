@@ -16,14 +16,15 @@ const decode = (s: string) =>
     .trim();
 
 /** Búsqueda web gratuita (DuckDuckGo HTML y Lite), sesgada a República Dominicana. */
-export async function searchWeb(query: string, limit = 6): Promise<WebResult[]> {
+export async function searchWeb(query: string, limit = 5): Promise<WebResult[]> {
   const q = query.replace(/--- Documento:[\s\S]*$/, "").trim().slice(0, 180);
   if (!q) return [];
 
-  // 1. Intento principal con DuckDuckGo HTML
+  // 1. Intento principal con DuckDuckGo HTML (máximo 3s para respuesta rápida)
   try {
     const res = await fetch(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(q)}&kl=do-es`, {
       headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36" },
+      signal: AbortSignal.timeout(3000),
     });
     if (res.ok) {
       const html = await res.text();
@@ -63,6 +64,7 @@ export async function searchWeb(query: string, limit = 6): Promise<WebResult[]> 
   try {
     const resLite = await fetch(`https://lite.duckduckgo.com/lite/?q=${encodeURIComponent(q)}&kl=do-es`, {
       headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36" },
+      signal: AbortSignal.timeout(2500),
     });
     if (resLite.ok) {
       const html = await resLite.text();
