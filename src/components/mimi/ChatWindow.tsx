@@ -139,6 +139,13 @@ export function ChatWindow({ threadId, initialMessages }: ChatWindowProps) {
           <VoicePanel
             onCallStateChange={setIsCallActive}
             onClose={() => setVoiceOpen(false)}
+            onUserSpeech={(text) => handleSend(text, { webSearch: false, files: [] })}
+            reply={
+              messages.length > 0 && messages[messages.length - 1].role === "assistant"
+                ? { id: messages[messages.length - 1].id, text: messages[messages.length - 1].content }
+                : null
+            }
+            busy={busy}
           />
         )}
         <Composer

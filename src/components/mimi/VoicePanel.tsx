@@ -22,10 +22,13 @@ interface VoicePanelProps {
   busy?: boolean;
 }
 
-export function VoicePanel({ onCallStateChange, onClose }: VoicePanelProps) {
+export function VoicePanel({ onCallStateChange, onClose, onUserSpeech, reply, busy }: VoicePanelProps) {
   const { status, error, audioRef, start, stop, setMuted, muted } = useLiveVoice({
+    onUserSpeech,
+    reply,
+    busy,
     onEvent: (e) => {
-      // Aquí se podrían manejar eventos de la conexión WebRTC si se necesita
+      // Eventos de voz
     }
   });
 
@@ -49,11 +52,13 @@ export function VoicePanel({ onCallStateChange, onClose }: VoicePanelProps) {
     ? error
     : status === "idle" || status === "closed"
       ? "Toca “Hablar” para empezar"
-      : status === "connecting"
-        ? "Conectando llamada..."
-        : status === "connected"
-          ? "Llamada de voz en curso..."
-          : "En llamada con Mimi";
+        : status === "listening"
+        ? "Te estoy escuchando..."
+        : status === "processing"
+          ? "Mimi está pensando..."
+          : status === "speaking"
+            ? "Mimi está hablando..."
+            : "En llamada con Mimi";
 
   return (
     <div className="mb-3 flex flex-wrap items-center gap-3 rounded-2xl border border-primary/30 bg-card/80 px-3 py-2.5 sm:px-4">
@@ -63,7 +68,7 @@ export function VoicePanel({ onCallStateChange, onClose }: VoicePanelProps) {
         <span
           className={cn(
             "absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card",
-            status === "connected" ? "animate-pulse bg-online" : "bg-muted-foreground",
+            (status === "listening" || status === "speaking" || status === "processing") ? "animate-pulse bg-online" : "bg-muted-foreground",
           )}
         />
       </div>
