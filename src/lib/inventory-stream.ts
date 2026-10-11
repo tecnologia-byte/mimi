@@ -116,7 +116,7 @@ export async function startInventoryStream() {
     connectionStatus = 'offline';
     isConnecting = false;
   } finally {
-    if (connectionStatus !== 'connected') {
+    if ((connectionStatus as string) !== 'connected') {
       setTimeout(startInventoryStream, 10000); // Retry after 10s
     } else {
       connectionStatus = 'offline'; 
