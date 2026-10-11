@@ -1,6 +1,6 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { stepCountIs, streamText, type ModelMessage, type ToolSet } from "ai";
-import { fallbackModel } from "./fallback.ts";
+import { fallbackModel } from "./fallback";
 
 import {
   createLovableAiGatewayRunIdFetch,
