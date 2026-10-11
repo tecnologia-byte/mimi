@@ -231,6 +231,7 @@ export function useLiveVoice({
       }, 1500);
       return () => clearTimeout(t);
     }
+    return undefined;
   }, [busy, setStatus]);
 
   const stop = useCallback(() => {
