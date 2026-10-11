@@ -332,7 +332,7 @@ export function MessageList({ messages, busy, onRegenerate }: MessageListProps) 
           </div>
         );
       })}
-      {busy && (
+      {busy && !mimiAlreadyWriting && (
         <div className="flex gap-3">
           <img
             src={mimiAvatar.url}
