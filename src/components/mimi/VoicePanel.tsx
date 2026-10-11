@@ -54,13 +54,15 @@ export function VoicePanel({ onCallStateChange, onClose, onUserSpeech, reply, bu
     ? error
     : status === "idle" || status === "closed"
       ? "Toca “Hablar” para empezar"
-        : status === "listening"
-        ? "Te estoy escuchando..."
-        : status === "processing"
-          ? "Mimi está pensando..."
-          : status === "speaking"
-            ? "Mimi está hablando..."
-            : "En llamada con Mimi";
+        : muted
+          ? "Micrófono silenciado"
+          : status === "listening"
+          ? "Te escucho… habla cuando quieras"
+          : status === "processing"
+            ? "Mimi está pensando… (puedes interrumpir)"
+            : status === "speaking"
+              ? "Mimi habla… háblale para interrumpir"
+              : "En llamada con Mimi";
 
   return (
     <div className="mb-3 flex flex-wrap items-center gap-3 rounded-2xl border border-primary/30 bg-card/80 px-3 py-2.5 sm:px-4">
