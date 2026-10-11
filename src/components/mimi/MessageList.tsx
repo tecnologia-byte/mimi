@@ -193,6 +193,15 @@ export function MessageList({ messages, busy, onRegenerate }: MessageListProps) 
 
   const lastAssistantId = [...messages].reverse().find((m) => m.role === "assistant")?.id;
 
+  // Mimi ya está escribiendo texto: no mostrar el indicador aparte con otro avatar
+  const lastMsg = messages[messages.length - 1];
+  const mimiAlreadyWriting =
+    busy &&
+    lastMsg?.role === "assistant" &&
+    (messageText(lastMsg).trim().length > 0 ||
+      (lastMsg.parts ?? []).some((p) => p.type === "tool-consultar_agente") ||
+      extractSources(lastMsg).length > 0);
+
   return (
     <div className="chat-scroll mx-auto w-full max-w-3xl flex-1 space-y-8 overflow-y-auto px-4 py-8">
       {messages.map((message) => {
@@ -222,6 +231,10 @@ export function MessageList({ messages, busy, onRegenerate }: MessageListProps) 
             </div>
           );
         }
+        // Omitir burbujas de Mimi vacías (solo avatar) para no duplicar el avatar mientras escribe
+        const hasToolCard = (message.parts ?? []).some((p) => p.type === "tool-consultar_agente");
+        const hasSources = extractSources(message).length > 0;
+        if (!text.trim() && !hasToolCard && !hasSources) return null;
         return (
           <div key={message.id} className="flex gap-3">
             <img
@@ -319,7 +332,7 @@ export function MessageList({ messages, busy, onRegenerate }: MessageListProps) 
           </div>
         );
       })}
-      {busy && (
+      {busy && !mimiAlreadyWriting && (
         <div className="flex gap-3">
           <img
             src={mimiAvatar.url}
