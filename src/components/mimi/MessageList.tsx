@@ -222,6 +222,10 @@ export function MessageList({ messages, busy, onRegenerate }: MessageListProps) 
             </div>
           );
         }
+        // Omitir burbujas de Mimi vacías (solo avatar) para no duplicar el avatar mientras escribe
+        const hasToolCard = (message.parts ?? []).some((p) => p.type === "tool-consultar_agente");
+        const hasSources = extractSources(message).length > 0;
+        if (!text.trim() && !hasToolCard && !hasSources) return null;
         return (
           <div key={message.id} className="flex gap-3">
             <img
