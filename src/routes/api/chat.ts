@@ -6,10 +6,10 @@ import {
   createUIMessageStream,
   createUIMessageStreamResponse,
   generateText,
-  experimental_fallback,
   type UIMessage,
 } from "ai";
 import { searchWeb, type WebResult } from "@/lib/web-search";
+import { fallbackModel } from "@/lib/ai/fallback";
 
 import { createResponsesCall } from "@/lib/ai/responses";
 import { getAiConfigs, getAiConfig } from "@/lib/ai/config";
@@ -48,7 +48,7 @@ async function generateChatTitle(firstMessage: string): Promise<string> {
     });
 
     const { text } = await generateText({
-      model: experimental_fallback(models),
+      model: fallbackModel(models),
       prompt: `Genera un título muy corto (máximo 5 palabras, en español, sin comillas ni punto final) que resuma el tema de este mensaje. Responde solo con el título.\n\nMensaje: ${firstMessage.slice(0, 500)}`,
     });
     const title = text.trim().replace(/^["']|["']$/g, "").slice(0, 60);

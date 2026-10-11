@@ -1,5 +1,6 @@
 import { createOpenAI } from "@ai-sdk/openai";
-import { experimental_fallback, stepCountIs, streamText, type ModelMessage, type ToolSet } from "ai";
+import { stepCountIs, streamText, type ModelMessage, type ToolSet } from "ai";
+import { fallbackModel } from "./fallback";
 
 import {
   createLovableAiGatewayRunIdFetch,
@@ -37,7 +38,7 @@ export function createResponsesCall(
   const system = options.system ?? "";
   
   const result = streamText({
-    model: experimental_fallback(models),
+    model: fallbackModel(models),
     messages,
     ...(system ? { system } : {}),
     ...(Object.keys(tools).length ? { tools, stopWhen: stepCountIs(50) } : {}),

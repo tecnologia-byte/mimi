@@ -59,7 +59,7 @@ interface Integration {
   Logo: React.ComponentType<{ className?: string }>;
   tileBg: string;
   status: "connected" | "disconnected" | "upcoming";
-  connectedEmail?: string;
+  connectedEmail?: string | undefined;
   isGoogle?: boolean;
 }
 
@@ -222,7 +222,7 @@ function IntegrationsPage({ userId }: { userId: string }) {
   // Cargar estado de conexiones guardadas en localStorage y manejar redirección OAuth
   useEffect(() => {
     const initializeState = async () => {
-      let parsed: Record<string, { connected: boolean; email?: string }> = {};
+      let parsed: Record<string, { connected: boolean; email?: string | undefined }> = {};
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) parsed = JSON.parse(saved);
@@ -252,7 +252,7 @@ function IntegrationsPage({ userId }: { userId: string }) {
             return {
               ...item,
               status: "connected",
-              connectedEmail: parsed[item.id].email || "tecnologia@ivadsrl.com",
+              connectedEmail: parsed[item.id]?.email || "tecnologia@ivadsrl.com",
             };
           }
           return item;
@@ -266,7 +266,7 @@ function IntegrationsPage({ userId }: { userId: string }) {
   const saveState = (updated: Integration[]) => {
     setIntegrations(updated);
     try {
-      const stateObj: Record<string, { connected: boolean; email?: string }> = {};
+      const stateObj: Record<string, { connected: boolean; email?: string | undefined }> = {};
       for (const item of updated) {
         if (item.status === "connected") {
           stateObj[item.id] = { connected: true, email: item.connectedEmail };

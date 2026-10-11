@@ -6,7 +6,7 @@ export function createExecutiveTools() {
   return {
     consultar_datos_sistema: tool({
       description: "Consulta y responde sobre CUALQUIER dato del sistema en tiempo real. Esto incluye el catálogo completo de productos, existencias totales, códigos de importación, almacenes, alertas, inventario crítico y consultas generales del sistema consumiendo los datos decodificados del cliente binario.",
-      parameters: z.object({
+      inputSchema: z.object({
         query: z.string().describe("La consulta específica sobre el sistema o inventario, por ejemplo 'catálogo de productos', 'existencias totales', 'códigos de importación', 'alertas', etc.")
       }),
       execute: async () => {
@@ -21,7 +21,7 @@ export function createExecutiveTools() {
     }),
     get_low_stock_products: tool({
       description: "Consulta los productos próximos a agotarse en tiempo real y el stock crítico. Si los datos incluyen 'código de importación', 'partida arancelaria' o 'SKU', asegúrate de formatearlos y entregarlos explícitamente en tu respuesta.",
-      parameters: z.object({}),
+      inputSchema: z.object({}),
       execute: async () => {
         const data = await getInventoryData();
         if (data.estadoConexion === 'offline' && (!data.productos || data.productos.length === 0)) {
@@ -35,7 +35,7 @@ export function createExecutiveTools() {
     }),
     consultar_inventario_critico: tool({
       description: "Consulta los productos próximos a agotarse en tiempo real y el stock crítico. Si los datos incluyen 'código de importación', 'partida arancelaria' o 'SKU', asegúrate de formatearlos y entregarlos explícitamente en tu respuesta.",
-      parameters: z.object({}),
+      inputSchema: z.object({}),
       execute: async () => {
         const data = await getInventoryData();
         if (data.estadoConexion === 'offline' && (!data.productos || data.productos.length === 0)) {
@@ -49,7 +49,7 @@ export function createExecutiveTools() {
     }),
     alertas_sistema: tool({
       description: "Consulta las alertas activas del sistema (retrasos de proveedores, problemas de despacho, etc.) consumiendo el stream en tiempo real.",
-      parameters: z.object({}),
+      inputSchema: z.object({}),
       execute: async () => {
         const data = await getSystemAlertsData();
         if (!data.alertas || data.alertas.length === 0 || data.alertas.some((a: any) => a.mensaje && a.mensaje.includes('servilletas'))) {
