@@ -166,7 +166,7 @@ export const Route = createFileRoute("/api/chat")({
           agentBlock = `\n\n## Tu versión activa\n${SPECIALISTS[agent]}\nSi la tarea también necesita a otra especialista, consúltala con la herramienta consultar_agente.`;
         } else if (agent === "milt") {
           agentBlock =
-            "\n\n## Modo Milt\nEres la coordinadora de Milt, el equipo de agentes de IVAD. Para cada tarea divide el trabajo y consulta a Mimi Contadora, Mimi Logística y/o Mimi Ejecutiva con la herramienta consultar_agente (pueden ser varias consultas). Luego une sus respuestas en una solución final clara, indicando qué aportó cada agente.";
+            "\n\n## Modo Milt\nEres la coordinadora de Milt, el equipo de agentes de IVAD. Para cada tarea divide el trabajo y consulta a Mimi Contadora, Mimi Logística y/o Mimi Ejecutiva con la herramienta consultar_agente (pueden ser varias consultas). Luego une sus respuestas en una solución final sintética, ultra concisa y directa al grano, sin rellenos innecesarios, indicando brevemente qué aportó cada agente.";
         }
         // Mimi general solo consulta a las privadas si el usuario tiene acceso a Milt.
         let canConsult = agent !== "mimi";
@@ -195,12 +195,18 @@ export const Route = createFileRoute("/api/chat")({
           ? "\n\n## MODO LLAMADA DE VOZ (prioridad máxima)\nEstás en una llamada telefónica real. Habla como una persona: frases cortas y naturales, máximo 2 o 3 oraciones por turno. NUNCA uses listas, viñetas, numeraciones, títulos, tablas, emojis, asteriscos ni enlaces. Entiende el lenguaje coloquial dominicano y lo que la persona quiere decir aunque lo diga desordenado. Guía paso a paso: da una sola idea o paso a la vez y termina con una pregunta corta para seguir la conversación (por ejemplo: «¿Te lo explico más?»). Usa expresiones naturales como «claro», «mira», «perfecto». Si algo es largo, resume y ofrece seguir."
           : "";
         const antiHallucinationBlock = "\n\n## REGLA MANDATORIA ANTI-ALUCINACIÓN (Inventario y Productos)\nLa IA (Mimi Ejecutiva, Logística, Contadora, Milt, Mimi general) tiene TERMINANTEMENTE PROHIBIDO inventar o asumir productos, nombres, existencias, códigos de importación (DGA/partida arancelaria/SKU) o precios.\n- Solo puedes mencionar productos y códigos de importación que provengan explícitamente de la herramienta del sistema / stream en tiempo real.\n- Si un producto no existe en los datos del sistema o si el usuario pregunta por un artículo no registrado, debes responder con total transparencia: 'Este producto no figura en el registro oficial del sistema en este momento', sin intentar adivinar ni inventar datos.";
+        const brevityBlock =
+          "\n\n## REGLA ESTRICTA DE BREVEDAD Y AHORRO DE TOKENS (Máxima Prioridad)\n" +
+          "1. ULTRA CONCISA POR DEFECTO: Responde siempre de forma ultra concisa, directa y al grano. Para saludos, confirmaciones, dudas cotidianas o preguntas puntuales, usa como máximo 1 a 3 oraciones cortas.\n" +
+          "2. CERO RELLENO: Prohibido usar introducciones ceremoniosas ('¡Hola! Con mucho gusto te ayudo...'), repetir la pregunta del usuario, dar resúmenes no pedidos o redactar despedidas extensas al final de cada mensaje.\n" +
+          "3. EXTENSIÓN BAJO DEMANDA: Solo genera explicaciones detalladas, tablas extensas o informes completos si el usuario lo solicita explícitamente (ej: 'hazme un informe detallado', 'dame la tabla completa', 'explica a fondo'). Si no se pide expresamente, entrega exclusivamente el dato o respuesta concreta.\n" +
+          "4. FORMATO EFICIENTE: Reserva encabezados múltiples, viñetas largas y estructuras complejas únicamente para reportes solicitados expresamente; en consultas cotidianas responde directo y sin adornos innecesarios.";
 
         const { result } = createResponsesCall(
           request,
           configs,
           {
-            system: MIMI_SYSTEM_PROMPT + agentBlock + antiHallucinationBlock + knowledgeBlock + reminderPromptBlock() + memoryBlock + webBlock + voiceBlock,
+            system: MIMI_SYSTEM_PROMPT + brevityBlock + agentBlock + antiHallucinationBlock + knowledgeBlock + reminderPromptBlock() + memoryBlock + webBlock + voiceBlock,
             tools: { 
               ...(canConsult ? createMiltTools(request.signal) : {}), 
 
