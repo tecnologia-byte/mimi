@@ -20,6 +20,7 @@ import { createGmailTools } from "@/lib/gmail-tools";
 import { createMemoryTools, memoryPromptBlock } from "@/lib/memory-tools";
 import { createReminderTools, reminderPromptBlock } from "@/lib/reminder-tools";
 import { createExecutiveTools } from "@/lib/executive-tools";
+import { createReportTools, REPORTS_PROMPT } from "@/lib/report-tools";
 
 function messageText(message: UIMessage): string {
   return message.parts
@@ -135,7 +136,16 @@ export const Route = createFileRoute("/api/chat")({
           }
         }
 
-        const configs = getAiConfigs();
+        // Images need a model that can see; swap OpenRouter text-only models for vision ones.
+        const hasImage = messages.some((m) => m.parts.some((p) => p.type === "file" && String(p.mediaType).startsWith("image/")));
+        const baseConfigs = getAiConfigs();
+        const configs = hasImage
+          ? baseConfigs.flatMap((c) =>
+              c.provider === "openrouter"
+                ? ["google/gemma-4-31b-it:free", "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free", "google/gemma-4-26b-a4b-it:free"].map((model) => ({ ...c, model }))
+                : [c],
+            )
+          : baseConfigs;
         if (configs.length === 0) {
           return new Response(JSON.stringify({ error: "IA no configurada" }), { status: 500 });
         }
@@ -179,6 +189,8 @@ export const Route = createFileRoute("/api/chat")({
           }
         }
         const memoryBlock = await memoryPromptBlock(supabase);
+        const reportsEnabled = agent === "ejecutiva" || agent === "milt";
+        const filesBlock = "\n\n## Archivos adjuntos\nPuedes ver imágenes y leer documentos (PDF, Word, Excel, texto) que te adjunten. Analízalos directamente; nunca digas que no puedes verlos. Quedan guardados de forma privada en la sección Documentos de la persona.";
         let webResults: WebResult[] = [];
         let webBlock = "";
         const isWebSearch = body.webSearch === true || String(body.webSearch) === "true";
@@ -206,11 +218,12 @@ export const Route = createFileRoute("/api/chat")({
           request,
           configs,
           {
-            system: MIMI_SYSTEM_PROMPT + brevityBlock + agentBlock + antiHallucinationBlock + knowledgeBlock + reminderPromptBlock() + memoryBlock + webBlock + voiceBlock,
+            system: MIMI_SYSTEM_PROMPT + brevityBlock + agentBlock + antiHallucinationBlock + knowledgeBlock + reminderPromptBlock() + memoryBlock + filesBlock + (reportsEnabled ? REPORTS_PROMPT : "") + webBlock + voiceBlock,
             tools: { 
               ...(canConsult ? createMiltTools(request.signal) : {}), 
 
               ...(agent === "ejecutiva" || agent === "milt" || canConsult ? createExecutiveTools() : {}),
+              ...(reportsEnabled ? createReportTools(supabase, userData.user.id) : {}),
               ...createGmailTools(), 
               ...createReminderTools(supabase, userData.user.id, threadId), 
               ...createMemoryTools(supabase, userData.user.id) 

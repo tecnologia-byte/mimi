@@ -21,8 +21,10 @@ import { Route as MemoriaRouteImport } from './routes/memoria'
 import { Route as MiltRouteImport } from './routes/milt'
 import { Route as PlantillasRouteImport } from './routes/plantillas'
 import { Route as RecordatoriosRouteImport } from './routes/recordatorios'
+import { Route as ReportesRouteImport } from './routes/reportes'
 import { Route as SolicitarAccesoRouteImport } from './routes/solicitar-acceso'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiReportRequestRouteImport } from './routes/api/report-request'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ChatThreadIdRouteImport } from './routes/chat.$threadId'
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
@@ -87,6 +89,11 @@ const RecordatoriosRoute = RecordatoriosRouteImport.update({
   path: '/recordatorios',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReportesRoute = ReportesRouteImport.update({
+  id: '/reportes',
+  path: '/reportes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SolicitarAccesoRoute = SolicitarAccesoRouteImport.update({
   id: '/solicitar-acceso',
   path: '/solicitar-acceso',
@@ -95,6 +102,11 @@ const SolicitarAccesoRoute = SolicitarAccesoRouteImport.update({
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiReportRequestRoute = ApiReportRequestRouteImport.update({
+  id: '/api/report-request',
+  path: '/api/report-request',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiTtsRoute = ApiTtsRouteImport.update({
@@ -126,8 +138,10 @@ export interface FileRoutesByFullPath {
   '/milt': typeof MiltRoute
   '/plantillas': typeof PlantillasRoute
   '/recordatorios': typeof RecordatoriosRoute
+  '/reportes': typeof ReportesRoute
   '/solicitar-acceso': typeof SolicitarAccesoRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/report-request': typeof ApiReportRequestRoute
   '/api/tts': typeof ApiTtsRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
@@ -145,8 +159,10 @@ export interface FileRoutesByTo {
   '/milt': typeof MiltRoute
   '/plantillas': typeof PlantillasRoute
   '/recordatorios': typeof RecordatoriosRoute
+  '/reportes': typeof ReportesRoute
   '/solicitar-acceso': typeof SolicitarAccesoRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/report-request': typeof ApiReportRequestRoute
   '/api/tts': typeof ApiTtsRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
@@ -165,8 +181,10 @@ export interface FileRoutesById {
   '/milt': typeof MiltRoute
   '/plantillas': typeof PlantillasRoute
   '/recordatorios': typeof RecordatoriosRoute
+  '/reportes': typeof ReportesRoute
   '/solicitar-acceso': typeof SolicitarAccesoRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/report-request': typeof ApiReportRequestRoute
   '/api/tts': typeof ApiTtsRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
@@ -186,8 +204,10 @@ export interface FileRouteTypes {
     | '/milt'
     | '/plantillas'
     | '/recordatorios'
+    | '/reportes'
     | '/solicitar-acceso'
     | '/api/chat'
+    | '/api/report-request'
     | '/api/tts'
     | '/chat/$threadId'
     | '/api/public/hooks/reminders'
@@ -205,8 +225,10 @@ export interface FileRouteTypes {
     | '/milt'
     | '/plantillas'
     | '/recordatorios'
+    | '/reportes'
     | '/solicitar-acceso'
     | '/api/chat'
+    | '/api/report-request'
     | '/api/tts'
     | '/chat/$threadId'
     | '/api/public/hooks/reminders'
@@ -224,8 +246,10 @@ export interface FileRouteTypes {
     | '/milt'
     | '/plantillas'
     | '/recordatorios'
+    | '/reportes'
     | '/solicitar-acceso'
     | '/api/chat'
+    | '/api/report-request'
     | '/api/tts'
     | '/chat/$threadId'
     | '/api/public/hooks/reminders'
@@ -244,8 +268,10 @@ export interface RootRouteChildren {
   MiltRoute: typeof MiltRoute
   PlantillasRoute: typeof PlantillasRoute
   RecordatoriosRoute: typeof RecordatoriosRoute
+  ReportesRoute: typeof ReportesRoute
   SolicitarAccesoRoute: typeof SolicitarAccesoRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiReportRequestRoute: typeof ApiReportRequestRoute
   ApiTtsRoute: typeof ApiTtsRoute
   ChatThreadIdRoute: typeof ChatThreadIdRoute
   ApiPublicHooksRemindersRoute: typeof ApiPublicHooksRemindersRoute
@@ -337,6 +363,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RecordatoriosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reportes': {
+      id: '/reportes'
+      path: '/reportes'
+      fullPath: '/reportes'
+      preLoaderRoute: typeof ReportesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/solicitar-acceso': {
       id: '/solicitar-acceso'
       path: '/solicitar-acceso'
@@ -349,6 +382,13 @@ declare module '@tanstack/react-router' {
       path: '/api/chat'
       fullPath: '/api/chat'
       preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/report-request': {
+      id: '/api/report-request'
+      path: '/api/report-request'
+      fullPath: '/api/report-request'
+      preLoaderRoute: typeof ApiReportRequestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/tts': {
@@ -388,8 +428,10 @@ const rootRouteChildren: RootRouteChildren = {
   MiltRoute: MiltRoute,
   PlantillasRoute: PlantillasRoute,
   RecordatoriosRoute: RecordatoriosRoute,
+  ReportesRoute: ReportesRoute,
   SolicitarAccesoRoute: SolicitarAccesoRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiReportRequestRoute: ApiReportRequestRoute,
   ApiTtsRoute: ApiTtsRoute,
   ChatThreadIdRoute: ChatThreadIdRoute,
   ApiPublicHooksRemindersRoute: ApiPublicHooksRemindersRoute,
