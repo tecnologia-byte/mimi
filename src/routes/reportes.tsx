@@ -80,7 +80,7 @@ function Reports({ userId }: { userId: string }) {
 
   const upload = async (file: File | undefined) => {
     if (!file) return;
-    if (isCodeFile(file)) return toast.error("No se permiten archivos de código");
+    if (isCodeFile(file)) { toast.error("No se permiten archivos de código"); return; }
     setBusy(true);
     try {
       const path = `${date}/${crypto.randomUUID()}-${file.name.replace(/[^\w.\-]+/g, "_")}`;
@@ -117,14 +117,14 @@ function Reports({ userId }: { userId: string }) {
 
   const ask = async () => {
     const t = askTitle.trim();
-    if (t.length < 3) return toast.error("Escribe qué reporte necesitas");
+    if (t.length < 3) { toast.error("Escribe qué reporte necesitas"); return; }
     const { data } = await supabase.auth.getSession();
     const res = await fetch("/api/report-request", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${data.session?.access_token ?? ""}` },
       body: JSON.stringify({ title: t }),
     });
-    if (!res.ok) return toast.error("No se pudo enviar el aviso");
+    if (!res.ok) { toast.error("No se pudo enviar el aviso"); return; }
     const r = (await res.json()) as { notified: number };
     setAskTitle("");
     qc.invalidateQueries({ queryKey: ["report-requests"] });
