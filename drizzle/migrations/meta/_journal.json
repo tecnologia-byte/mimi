@@ -43,6 +43,13 @@
       "when": 1791168815030,
       "tag": "0005_user_memories",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791858417926,
+      "tag": "0006_reports",
+      "breakpoints": true
     }
   ]
 }

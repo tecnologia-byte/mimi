@@ -279,6 +279,78 @@ export type Database = {
         }
         Relationships: []
       }
+      report_requests: {
+        Row: {
+          created_at: string
+          fulfilled_at: string | null
+          id: string
+          message: string | null
+          requested_by: string
+          status: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          fulfilled_at?: string | null
+          id?: string
+          message?: string | null
+          requested_by?: string
+          status?: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          fulfilled_at?: string | null
+          id?: string
+          message?: string | null
+          requested_by?: string
+          status?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      reports: {
+        Row: {
+          category: string
+          content: string | null
+          created_at: string
+          id: string
+          mime_type: string
+          report_date: string
+          request_id: string | null
+          size: number
+          storage_path: string
+          title: string
+          uploaded_by: string
+        }
+        Insert: {
+          category?: string
+          content?: string | null
+          created_at?: string
+          id?: string
+          mime_type?: string
+          report_date?: string
+          request_id?: string | null
+          size?: number
+          storage_path: string
+          title: string
+          uploaded_by?: string
+        }
+        Update: {
+          category?: string
+          content?: string | null
+          created_at?: string
+          id?: string
+          mime_type?: string
+          report_date?: string
+          request_id?: string | null
+          size?: number
+          storage_path?: string
+          title?: string
+          uploaded_by?: string
+        }
+        Relationships: []
+      }
       role_audit: {
         Row: {
           action: string
@@ -407,6 +479,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      can_access_reports: { Args: { _user_id: string }; Returns: boolean }
       claim_first_admin: { Args: never; Returns: boolean }
       has_agent_access: {
         Args: { _agent: string; _user_id: string }
