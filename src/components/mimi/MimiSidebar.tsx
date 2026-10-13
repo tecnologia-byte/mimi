@@ -19,6 +19,7 @@ import {
   Users,
   ShieldCheck,
   Blocks,
+  BarChart3,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
@@ -52,6 +53,7 @@ import { fetchMyRoles, myRolesKey } from "@/lib/roles";
 const sections = [
   { title: "Conocimientos", icon: BookOpen, to: "/conocimientos" },
   { title: "Documentos", icon: FileText, to: "/documentos" },
+  { title: "Reportes", icon: BarChart3, to: "/reportes" },
   { title: "Plantillas", icon: LayoutTemplate, to: "/plantillas" },
   { title: "Favoritos", icon: Star, to: "/favoritos" },
   { title: "Herramientas", icon: Wrench, to: "/herramientas" },
