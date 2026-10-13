@@ -23,6 +23,7 @@ import { Route as PlantillasRouteImport } from './routes/plantillas'
 import { Route as RecordatoriosRouteImport } from './routes/recordatorios'
 import { Route as SolicitarAccesoRouteImport } from './routes/solicitar-acceso'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiReportRequestRouteImport } from './routes/api/report-request'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ChatThreadIdRouteImport } from './routes/chat.$threadId'
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
@@ -97,6 +98,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiReportRequestRoute = ApiReportRequestRouteImport.update({
+  id: '/api/report-request',
+  path: '/api/report-request',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiTtsRoute = ApiTtsRouteImport.update({
   id: '/api/tts',
   path: '/api/tts',
@@ -128,6 +134,7 @@ export interface FileRoutesByFullPath {
   '/recordatorios': typeof RecordatoriosRoute
   '/solicitar-acceso': typeof SolicitarAccesoRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/report-request': typeof ApiReportRequestRoute
   '/api/tts': typeof ApiTtsRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
@@ -147,6 +154,7 @@ export interface FileRoutesByTo {
   '/recordatorios': typeof RecordatoriosRoute
   '/solicitar-acceso': typeof SolicitarAccesoRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/report-request': typeof ApiReportRequestRoute
   '/api/tts': typeof ApiTtsRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
@@ -167,6 +175,7 @@ export interface FileRoutesById {
   '/recordatorios': typeof RecordatoriosRoute
   '/solicitar-acceso': typeof SolicitarAccesoRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/report-request': typeof ApiReportRequestRoute
   '/api/tts': typeof ApiTtsRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
@@ -188,6 +197,7 @@ export interface FileRouteTypes {
     | '/recordatorios'
     | '/solicitar-acceso'
     | '/api/chat'
+    | '/api/report-request'
     | '/api/tts'
     | '/chat/$threadId'
     | '/api/public/hooks/reminders'
@@ -207,6 +217,7 @@ export interface FileRouteTypes {
     | '/recordatorios'
     | '/solicitar-acceso'
     | '/api/chat'
+    | '/api/report-request'
     | '/api/tts'
     | '/chat/$threadId'
     | '/api/public/hooks/reminders'
@@ -226,6 +237,7 @@ export interface FileRouteTypes {
     | '/recordatorios'
     | '/solicitar-acceso'
     | '/api/chat'
+    | '/api/report-request'
     | '/api/tts'
     | '/chat/$threadId'
     | '/api/public/hooks/reminders'
@@ -246,6 +258,7 @@ export interface RootRouteChildren {
   RecordatoriosRoute: typeof RecordatoriosRoute
   SolicitarAccesoRoute: typeof SolicitarAccesoRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiReportRequestRoute: typeof ApiReportRequestRoute
   ApiTtsRoute: typeof ApiTtsRoute
   ChatThreadIdRoute: typeof ChatThreadIdRoute
   ApiPublicHooksRemindersRoute: typeof ApiPublicHooksRemindersRoute
@@ -351,6 +364,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/report-request': {
+      id: '/api/report-request'
+      path: '/api/report-request'
+      fullPath: '/api/report-request'
+      preLoaderRoute: typeof ApiReportRequestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/tts': {
       id: '/api/tts'
       path: '/api/tts'
@@ -390,6 +410,7 @@ const rootRouteChildren: RootRouteChildren = {
   RecordatoriosRoute: RecordatoriosRoute,
   SolicitarAccesoRoute: SolicitarAccesoRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiReportRequestRoute: ApiReportRequestRoute,
   ApiTtsRoute: ApiTtsRoute,
   ChatThreadIdRoute: ChatThreadIdRoute,
   ApiPublicHooksRemindersRoute: ApiPublicHooksRemindersRoute,
