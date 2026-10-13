@@ -21,6 +21,7 @@ import { Route as MemoriaRouteImport } from './routes/memoria'
 import { Route as MiltRouteImport } from './routes/milt'
 import { Route as PlantillasRouteImport } from './routes/plantillas'
 import { Route as RecordatoriosRouteImport } from './routes/recordatorios'
+import { Route as ReportesRouteImport } from './routes/reportes'
 import { Route as SolicitarAccesoRouteImport } from './routes/solicitar-acceso'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiReportRequestRouteImport } from './routes/api/report-request'
@@ -88,6 +89,11 @@ const RecordatoriosRoute = RecordatoriosRouteImport.update({
   path: '/recordatorios',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReportesRoute = ReportesRouteImport.update({
+  id: '/reportes',
+  path: '/reportes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SolicitarAccesoRoute = SolicitarAccesoRouteImport.update({
   id: '/solicitar-acceso',
   path: '/solicitar-acceso',
@@ -132,6 +138,7 @@ export interface FileRoutesByFullPath {
   '/milt': typeof MiltRoute
   '/plantillas': typeof PlantillasRoute
   '/recordatorios': typeof RecordatoriosRoute
+  '/reportes': typeof ReportesRoute
   '/solicitar-acceso': typeof SolicitarAccesoRoute
   '/api/chat': typeof ApiChatRoute
   '/api/report-request': typeof ApiReportRequestRoute
@@ -152,6 +159,7 @@ export interface FileRoutesByTo {
   '/milt': typeof MiltRoute
   '/plantillas': typeof PlantillasRoute
   '/recordatorios': typeof RecordatoriosRoute
+  '/reportes': typeof ReportesRoute
   '/solicitar-acceso': typeof SolicitarAccesoRoute
   '/api/chat': typeof ApiChatRoute
   '/api/report-request': typeof ApiReportRequestRoute
@@ -173,6 +181,7 @@ export interface FileRoutesById {
   '/milt': typeof MiltRoute
   '/plantillas': typeof PlantillasRoute
   '/recordatorios': typeof RecordatoriosRoute
+  '/reportes': typeof ReportesRoute
   '/solicitar-acceso': typeof SolicitarAccesoRoute
   '/api/chat': typeof ApiChatRoute
   '/api/report-request': typeof ApiReportRequestRoute
@@ -195,6 +204,7 @@ export interface FileRouteTypes {
     | '/milt'
     | '/plantillas'
     | '/recordatorios'
+    | '/reportes'
     | '/solicitar-acceso'
     | '/api/chat'
     | '/api/report-request'
@@ -215,6 +225,7 @@ export interface FileRouteTypes {
     | '/milt'
     | '/plantillas'
     | '/recordatorios'
+    | '/reportes'
     | '/solicitar-acceso'
     | '/api/chat'
     | '/api/report-request'
@@ -235,6 +246,7 @@ export interface FileRouteTypes {
     | '/milt'
     | '/plantillas'
     | '/recordatorios'
+    | '/reportes'
     | '/solicitar-acceso'
     | '/api/chat'
     | '/api/report-request'
@@ -256,6 +268,7 @@ export interface RootRouteChildren {
   MiltRoute: typeof MiltRoute
   PlantillasRoute: typeof PlantillasRoute
   RecordatoriosRoute: typeof RecordatoriosRoute
+  ReportesRoute: typeof ReportesRoute
   SolicitarAccesoRoute: typeof SolicitarAccesoRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiReportRequestRoute: typeof ApiReportRequestRoute
@@ -350,6 +363,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RecordatoriosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reportes': {
+      id: '/reportes'
+      path: '/reportes'
+      fullPath: '/reportes'
+      preLoaderRoute: typeof ReportesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/solicitar-acceso': {
       id: '/solicitar-acceso'
       path: '/solicitar-acceso'
@@ -408,6 +428,7 @@ const rootRouteChildren: RootRouteChildren = {
   MiltRoute: MiltRoute,
   PlantillasRoute: PlantillasRoute,
   RecordatoriosRoute: RecordatoriosRoute,
+  ReportesRoute: ReportesRoute,
   SolicitarAccesoRoute: SolicitarAccesoRoute,
   ApiChatRoute: ApiChatRoute,
   ApiReportRequestRoute: ApiReportRequestRoute,
